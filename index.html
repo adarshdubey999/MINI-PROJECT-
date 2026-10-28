@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Based Dyscalculia Screening Tool | Rizvi College CS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+<style>
+  :root {
+    --primary: #1E40AF;
+    --primary-light: #3B82F6;
+    --primary-bg: #EFF6FF;
+    --dark: #0F172A;
+    --slate: #334155;
+    --muted: #64748B;
+    --border: #E2E8F0;
+    --card-bg: #FFFFFF;
+    --bg-page: #F8FAFC;
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  body { background: var(--bg-page); color: var(--dark); min-height: 100vh; display: flex; flex-direction: column; }
+  
+  /* Top Banner */
+  .top-header {
+    background: #FFFFFF;
+    border-bottom: 2px solid var(--border);
+    padding: 14px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  }
+  .brand-area { display: flex; align-items: center; gap: 14px; }
+  .brand-icon { font-size: 2.2rem; }
+  .brand-title h1 { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+  .brand-title p { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+  
+  .status-pill {
+    background: #F1F5F9;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--slate);
+  }
+  .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--success); }
+
+  /* App Layout */
+  .app-body { display: flex; flex: 1; }
+  
+  /* Sidebar */
+  aside.sidebar {
+    width: 270px;
+    background: #FFFFFF;
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .sidebar-section-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin: 12px 0 6px 12px;
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--slate);
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--primary-bg); color: var(--primary); }
+  .nav-btn.active {
+    background: var(--primary);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+  }
+  
+  .sidebar-badge {
+    margin-top: auto;
+    background: var(--primary-bg);
+    border: 1px solid #BFDBFE;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 0.75rem;
+    color: var(--primary);
+    line-height: 1.5;
+  }
+  
+  /* Main Content Viewport */
+  main.main-content {
+    flex: 1;
+    padding: 30px 45px;
+    overflow-y: auto;
+  }
+  
+  .tab-page { display: none; }
+  .tab-page.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  
+  /* Typography & Badges */
+  .badge-tag {
+    display: inline-block;
+    background: var(--primary-bg);
+    color: var(--primary);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    border: 1px solid #BFDBFE;
+  }
+  .view-header { margin-bottom: 24px; }
+  .view-header h2 { font-size: 1.85rem; font-weight: 800; color: var(--dark); }
+  .view-header p { font-size: 0.95rem; color: var(--muted); margin-top: 4px; }
+  
+  /* Cards */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  
+  .kpi-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .kpi-val { font-size: 2.1rem; font-weight: 800; color: var(--primary); }
+  .kpi-lbl { font-size: 0.78rem; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-top: 4px; }
+  
+  /* Buttons */
+  .btn-primary {
+    background: var(--primary);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 0.92rem;
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: #172554; }
+  .btn-secondary {
+    background: #F1F5F9;
+    color: var(--slate);
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .btn-secondary:hover { background: #E2E8F0; }
+  
+  /* Tables */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .data-table th { background: #F8FAFC; color: var(--muted); text-align: left; padding: 12px 14px; font-weight: 700; border-bottom: 2px solid var(--border); }
+  .data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--slate); }
+  .pill { display: inline-block; padding: 4px 10px; border-radius: 14px; font-size: 0.75rem; font-weight: 700; }
+  .pill-warn { background: #FEF3C7; color: #92400E; }
+  .pill-success { background: #DCFCE7; color: #166534; }
+  .pill-danger { background: #FEE2E2; color: #991B1B; }
+  
+  /* Assessment UI */
+  .stimulus-box {
+    background: #F8FAFC;
+    border: 2px dashed #CBD5E1;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    margin: 18px 0;
+  }
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+  .opt-btn {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--dark);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .opt-btn:hover { border-color: var(--primary-light); background: var(--primary-bg); }
+  .opt-btn.selected { border: 2px solid var(--primary); background: var(--primary-bg); color: var(--primary); font-weight: 700; }
+
+  /* Sliders & Forms */
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--slate); margin-bottom: 6px; }
+  .form-control {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--dark);
+    font-size: 0.92rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Navigation -->
+<header class="top-header">
+  <div class="brand-area">
+    <span class="brand-icon">🧠</span>
+    <div class="brand-title">
+      <h1>AI-Based Dyscalculia Screening Tool</h1>
+      <p>Rizvi College of Arts, Science & Commerce &bull; Sem V B.Sc. CS Project (Aadarsh Dubey)</p>
+    </div>
+  </div>
+  
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    <span>Logged In: <b>Demo Student (Rohan)</b> &bull; Age 10</span>
+  </div>
+</header>
+
+<div class="app-body">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-section-title">Navigation Menu</div>
+    <button class="nav-btn active" onclick="showTab('dashboard')"><span>📊</span> <span>Dashboard</span></button>
+    <button class="nav-btn" onclick="showTab('assessment')"><span>🧠</span> <span>Take Assessment</span></button>
+    <button class="nav-btn" onclick="showTab('results')"><span>📑</span> <span>Diagnostic Results</span></button>
+    <button class="nav-btn" onclick="showTab('visualizations')"><span>📈</span> <span>Visual Analytics</span></button>
+    <button class="nav-btn" onclick="showTab('assistant')"><span>🤖</span> <span>AI ML Simulator</span></button>
+    <button class="nav-btn" onclick="showTab('history')"><span>🗂️</span> <span>Assessment History</span></button>
+    <button class="nav-btn" onclick="showTab('gallery')"><span>🖼️</span> <span>Report Figures Gallery</span></button>
+    <button class="nav-btn" onclick="showTab('auth')"><span>🔐</span> <span>Account & Login</span></button>
+    
+    <div class="sidebar-badge">
+      <b>Project Tech Stack:</b><br/>
+      Python 3.13 &bull; Streamlit &bull; Scikit-learn &bull; Pandas &bull; NumPy &bull; SQLite
+    </div>
+  </aside>
+
+  <!-- Main Viewport -->
+  <main class="main-content">
+    
+    <!-- TAB 1: DASHBOARD -->
+    <section id="tab-dashboard" class="tab-page active">
+      <div class="view-header">
+        <span class="badge-tag">Section 7.2.2 &bull; Central Control Hub</span>
+        <h2>Screening Dashboard & Clinical Portal</h2>
+        <p>Welcome back, Rohan. Manage your assessment timeline, launch screenings, or inspect historical records.</p>
+      </div>
+      
+      <!-- Action Cards -->
+      <div class="grid-4" style="margin-bottom: 24px;">
+        <div class="card" style="background: linear-gradient(135deg, #1E40AF 0%, #172554 100%); color: white; border: none;">
+          <span style="font-size: 2rem;">🧠</span>
+          <h4 style="margin: 8px 0 4px 0; font-size: 1.1rem;">Take Screening</h4>
+          <p style="font-size: 0.8rem; opacity: 0.85; margin-bottom: 14px;">15 items across 5 numerical faculties.</p>
+          <button class="btn-primary" style="background: white; color: #1E40AF; width: 100%; font-size: 0.85rem;" onclick="showTab('assessment')">Start Assessment &rarr;</button>
+        </div>
+        
+        <div class="card">
+          <span style="font-size: 2rem;">📑</span>
+          <h4 style="color: var(--dark); margin: 8px 0 4px 0; font-size: 1.1rem;">Latest Report</h4>
+          <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 14px;">Session #1: Moderate Risk (46.7%).</p>
+          <button class="btn-secondary" style="width: 100%; font-size: 0.85rem;" onclick="showTab('results')">Inspect Report</button>
+        </div>
+        
+        <div class="card">
+          <span style="font-size: 2rem;">🤖</span>
+          <h4 style="color: var(--dark); margin: 8px 0 4px 0; font-size: 1.1rem;">AI Simulator</h4>
+          <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 14px;">Random Forest classifier what-if.</p>
+          <button class="btn-secondary" style="width: 100%; font-size: 0.85rem;" onclick="showTab('assistant')">Open Simulator</button>
+        </div>
+        
+        <div class="card">
+          <span style="font-size: 2rem;">🖼️</span>
+          <h4 style="color: var(--dark); margin: 8px 0 4px 0; font-size: 1.1rem;">Report Figures</h4>
+          <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 14px;">20 dissertation screenshots & charts.</p>
+          <button class="btn-secondary" style="width: 100%; font-size: 0.85rem;" onclick="showTab('gallery')">View Figures</button>
+        </div>
+      </div>
+      
+      <!-- Metrics -->
+      <div class="grid-4" style="margin-bottom: 24px;">
+        <div class="kpi-card"><div class="kpi-val">4</div><div class="kpi-lbl">Assessments Completed</div></div>
+        <div class="kpi-card"><div class="kpi-val" style="color: var(--success);">86.7%</div><div class="kpi-lbl">Cumulative Accuracy</div></div>
+        <div class="kpi-card"><div class="kpi-val" style="color: #7C3AED;">47.1s</div><div class="kpi-lbl">Average Duration</div></div>
+        <div class="kpi-card"><div class="kpi-val" style="color: var(--warning);">Active</div><div class="kpi-lbl">Random Forest 1.0</div></div>
+      </div>
+      
+      <!-- Domain Overview Table -->
+      <div class="card">
+        <h3 style="margin-bottom: 14px; font-size: 1.15rem; color: var(--dark);">🎯 Evaluated Numerical Cognitive Faculties (Chapter 1.4 & 7.2.3)</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>Cognitive Faculty</th><th>Target Function</th><th>Items</th><th>Norm Benchmark</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>1. Number Recognition & Subitizing</b></td><td>Intraparietal sulcus rapid dot apprehension</td><td>3 items</td><td>&ge; 85% (&lt;1.0s)</td><td><span class="pill pill-warn">Mild Latency</span></td></tr>
+            <tr><td><b>2. Magnitude Comparison</b></td><td>Distance effect mental number line differentiation</td><td>3 items</td><td>&ge; 85%</td><td><span class="pill pill-success">Proficient</span></td></tr>
+            <tr><td><b>3. Arithmetic Operations</b></td><td>Fact retrieval vs persistent finger counting</td><td>3 items</td><td>&ge; 85%</td><td><span class="pill pill-danger">Deficit (33%)</span></td></tr>
+            <tr><td><b>4. Quantity Estimation</b></td><td>Visual magnitude mapping & place value</td><td>3 items</td><td>&ge; 80%</td><td><span class="pill pill-warn">Needs Support</span></td></tr>
+            <tr><td><b>5. Mathematical Reasoning</b></td><td>Reverse sequences & applied logic</td><td>3 items</td><td>&ge; 85%</td><td><span class="pill pill-warn">Developing</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 2: LIVE ASSESSMENT RUNNER -->
+    <section id="tab-assessment" class="tab-page">
+      <div class="view-header">
+        <span class="badge-tag">Section 7.2.3 &bull; Diagnostic Assessment Battery</span>
+        <h2>Interactive Mathematical Screening Assessment</h2>
+        <p>Answer questions promptly. Binary correctness and reaction latencies are evaluated by the AI model.</p>
+      </div>
+      
+      <div class="card" style="border-top: 4px solid var(--primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <span style="background: var(--primary-bg); color: var(--primary); font-size: 0.8rem; font-weight: 700; padding: 4px 12px; border-radius: 12px;" id="q-domain">
+            Number Recognition & Subitizing
+          </span>
+          <span style="font-size: 0.9rem; color: var(--primary-light); font-weight: bold;" id="q-progress">Question 1 of 5</span>
+        </div>
+        
+        <h3 style="font-size: 1.4rem; color: var(--dark); margin-bottom: 14px;" id="q-title">
+          How many red dots do you see in the cluster below? (Answer without counting one by one)
+        </h3>
+        
+        <div class="stimulus-box" id="q-stimulus"></div>
+        <div class="options-grid" id="q-options"></div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <button class="btn-secondary" onclick="prevQuestion()">&larr; Previous Question</button>
+          <button class="btn-primary" onclick="nextQuestion()">Submit Answer & Next &rarr;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: DIAGNOSTIC RESULTS -->
+    <section id="tab-results" class="tab-page">
+      <div class="view-header">
+        <span class="badge-tag">Section 7.2.4 &bull; Risk Analysis & Diagnostic Report</span>
+        <h2>Diagnostic Screening & Risk Analysis Report</h2>
+        <p>Candidate: <b>Demo Student (Rohan)</b> &bull; Evaluation Model: <b>Scikit-learn Random Forest</b></p>
+      </div>
+      
+      <!-- Risk Outcome Banner -->
+      <div class="card" style="background: linear-gradient(135deg, #D97706 0%, #B45309 100%); color: white; display: flex; justify-content: space-between; align-items: center; border: none;">
+        <div>
+          <span style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">AI Machine Learning Screening Outcome</span>
+          <h2 style="font-size: 2.2rem; font-weight: 800; margin: 4px 0; color: white;">MODERATE RISK OF DYSCALCULIA</h2>
+          <p style="font-size: 0.95rem; max-width: 680px; opacity: 0.95;">
+            The model identified characteristic arithmetic fact-retrieval latency and quantity estimation deficits. Recommended for structured educational intervention.
+          </p>
+        </div>
+        <div style="background: rgba(255,255,255,0.22); border-radius: 12px; padding: 14px 22px; text-align: center;">
+          <span style="font-size: 2.3rem; font-weight: 800;">64.5%</span><br/>
+          <span style="font-size: 0.75rem; text-transform: uppercase;">Dyscalculia Index</span>
+        </div>
+      </div>
+      
+      <!-- Metrics -->
+      <div class="grid-4" style="margin-bottom: 22px;">
+        <div class="kpi-card"><div class="kpi-val">7 / 15</div><div class="kpi-lbl">Total Score</div></div>
+        <div class="kpi-card"><div class="kpi-val" style="color: var(--warning);">46.7%</div><div class="kpi-lbl">Overall Accuracy</div></div>
+        <div class="kpi-card"><div class="kpi-val" style="color: #7C3AED;">185.4s</div><div class="kpi-lbl">Total Duration</div></div>
+        <div class="kpi-card"><div class="kpi-val" style="color: var(--danger); font-size: 1.15rem; padding-top: 8px;">Mental Arithmetic</div><div class="kpi-lbl">Primary Deficit Area</div></div>
+      </div>
+      
+      <!-- Guidance Card -->
+      <div class="card" style="border-left: 5px solid var(--primary);">
+        <h3 style="color: var(--primary); margin-bottom: 10px;">🎯 Evidence-Based Educational Guidance</h3>
+        <ul style="font-size: 0.92rem; line-height: 1.7; padding-left: 20px; color: var(--slate);">
+          <li><b>Multi-Sensory Manipulatives:</b> Implement Numicon tiles, base-10 blocks, and Cuisenaire rods to make quantity transitions concrete.</li>
+          <li><b>Visual Desk Number Strip:</b> Provide a 0-100 visual desk number ruler to scaffold calculations without counting fingers.</li>
+          <li><b>Extended Testing Time:</b> Provide 30% extended time on arithmetic tasks to accommodate retrieval delays.</li>
+          <li><b>Permitted Four-Function Calculator:</b> Allow calculator usage for reasoning tasks so calculation blocks don't hinder problem comprehension.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- TAB 4: VISUAL ANALYTICS -->
+    <section id="tab-visualizations" class="tab-page">
+      <div class="view-header">
+        <span class="badge-tag">Section 7.2.5 &bull; Performance Analysis and Visualization</span>
+        <h2>Cognitive Performance Visualizations & Charts</h2>
+        <p>Matplotlib graphical representations comparing candidate accuracy and response latencies against peer baselines.</p>
+      </div>
+      
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 12px;">1. Category Accuracy vs Peer Baseline (85%)</h3>
+          <img src="project_report_images/Chart_7_2_5_Category_Accuracy.png" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);" alt="Category Accuracy Bar Chart" onerror="this.src='../project_report_images/Chart_7_2_5_Category_Accuracy.png'" />
+        </div>
+        <div class="card">
+          <h3 style="color: var(--success); font-size: 1.1rem; margin-bottom: 12px;">2. 5-Domain Cognitive Radar Profile</h3>
+          <img src="project_report_images/Chart_7_2_5_Cognitive_Radar.png" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);" alt="Cognitive Radar Chart" onerror="this.src='../project_report_images/Chart_7_2_5_Cognitive_Radar.png'" />
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3 style="color: #7C3AED; font-size: 1.1rem; margin-bottom: 12px;">3. Response Time Latency Analysis (Seconds)</h3>
+        <img src="project_report_images/Chart_7_2_5_Response_Latency.png" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);" alt="Response Time Latency Chart" onerror="this.src='../project_report_images/Chart_7_2_5_Response_Latency.png'" />
+      </div>
+    </section>
+
+    <!-- TAB 5: AI ML SIMULATOR -->
+    <section id="tab-assistant" class="tab-page">
+      <div class="view-header">
+        <span class="badge-tag">Section 7.2.6 &bull; AI Machine Learning Architecture</span>
+        <h2>AI Screening Assistant & What-If Simulator</h2>
+        <p>Scikit-learn Random Forest model (180 trees), confusion matrix, feature importance weights, and real-time simulator.</p>
+      </div>
+      
+      <div class="grid-4" style="margin-bottom: 22px;">
+        <div class="kpi-card"><div class="kpi-val">100.0%</div><div class="kpi-lbl">Model Accuracy</div></div>
+        <div class="kpi-card"><div class="kpi-val" style="color: var(--success);">100.0%</div><div class="kpi-lbl">Precision</div></div>
+        <div class="kpi-card"><div class="kpi-val" style="color: var(--warning);">100.0%</div><div class="kpi-lbl">Recall (Sensitivity)</div></div>
+        <div class="kpi-card"><div class="kpi-val" style="color: #7C3AED;">1.000</div><div class="kpi-lbl">ROC-AUC Score</div></div>
+      </div>
+      
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="color: var(--primary); margin-bottom: 14px;">⚙️ Live What-If Simulator</h3>
+          
+          <div class="form-group">
+            <label class="form-label">Subitizing Accuracy: <b id="lbl-sub" style="color: var(--primary);">60%</b></label>
+            <input type="range" class="form-control" min="0" max="100" value="60" oninput="updateSim()" id="rng-sub" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subitizing Latency: <b id="lbl-sub-rt" style="color: var(--primary);">2200 ms</b></label>
+            <input type="range" class="form-control" min="400" max="4000" value="2200" oninput="updateSim()" id="rng-sub-rt" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mental Arithmetic Accuracy: <b id="lbl-arith" style="color: var(--danger);">35%</b></label>
+            <input type="range" class="form-control" min="0" max="100" value="35" oninput="updateSim()" id="rng-arith" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Arithmetic Latency: <b id="lbl-arith-rt" style="color: var(--danger);">3400 ms</b></label>
+            <input type="range" class="form-control" min="800" max="6000" value="3400" oninput="updateSim()" id="rng-arith-rt" />
+          </div>
+          
+          <div style="background: var(--primary-bg); border: 2px solid #BFDBFE; border-radius: 10px; padding: 16px; margin-top: 18px;">
+            <span style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; font-weight: 800;">Simulated Prediction</span>
+            <h4 style="color: var(--danger); font-size: 1.4rem; margin-top: 2px;" id="sim-outcome">HIGH DYSCALCULIA RISK</h4>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-top: 4px;">Dyscalculia Index: <b id="sim-prob" style="color: var(--danger);">88.4%</b></p>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3 style="color: var(--success); margin-bottom: 12px;">📊 Confusion Matrix & Feature Weights</h3>
+          <img src="project_report_images/Chart_7_2_6_Confusion_Matrix.png" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 14px;" alt="Confusion Matrix" onerror="this.src='../project_report_images/Chart_7_2_6_Confusion_Matrix.png'" />
+          
+          <table class="data-table" style="font-size: 0.82rem;">
+            <thead><tr><th>Feature</th><th>Domain</th><th>Weight</th></tr></thead>
+            <tbody>
+              <tr><td>Arithmetic Latency</td><td>Fact Retrieval</td><td><b>24.1%</b></td></tr>
+              <tr><td>Subitizing Latency</td><td>Number Module</td><td><b>18.6%</b></td></tr>
+              <tr><td>Arithmetic Accuracy</td><td>Calculation</td><td><b>16.2%</b></td></tr>
+              <tr><td>Magnitude Accuracy</td><td>Number Sense</td><td><b>14.5%</b></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: ASSESSMENT HISTORY -->
+    <section id="tab-history" class="tab-page">
+      <div class="view-header">
+        <span class="badge-tag">Section 7.2.7 &bull; SQLite Database Records</span>
+        <h2>User Profile & Assessment History</h2>
+        <p>Comprehensive SQLite records tracking candidate progress across all screening sessions.</p>
+      </div>
+      
+      <div class="card" style="background: #FFFFFF;">
+        <div class="grid-4" style="font-size: 0.9rem;">
+          <div><span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">STUDENT NAME</span><p style="font-size: 1.15rem; font-weight: bold; color: var(--dark);">Demo Student (Rohan)</p></div>
+          <div><span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">EMAIL</span><p style="color: var(--primary);">rohan@example.com</p></div>
+          <div><span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">ROLE</span><p>Student (Age 10)</p></div>
+          <div><span style="font-size: 0.75rem; color: var(--muted); font-weight: 700;">AFFILIATION</span><p>Rizvi College CS Dept</p></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-bottom: 14px; font-size: 1.15rem;">🗂️ Stored Screening Sessions (4 in SQLite DB)</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>Session ID</th><th>Date</th><th>Score</th><th>Accuracy</th><th>Duration</th><th>Outcome</th><th>Deficit Area</th></tr>
+          </thead>
+          <tbody>
+            <tr style="background: #FFFBEB;"><td><b>#1 (Initial)</b></td><td>2026-10-25 14:30</td><td>7 / 15</td><td><b>46.7%</b></td><td>185.4s</td><td><span class="pill pill-warn">Moderate Risk (64.5%)</span></td><td>Mental Arithmetic</td></tr>
+            <tr><td><b>#2 (Practice)</b></td><td>2026-10-28 08:11</td><td>15 / 15</td><td>100.0%</td><td>52.1s</td><td><span class="pill pill-success">Low Risk (15.0%)</span></td><td>None</td></tr>
+            <tr><td><b>#3 (Review)</b></td><td>2026-10-28 08:12</td><td>14 / 15</td><td>93.3%</td><td>48.3s</td><td><span class="pill pill-success">Low Risk (15.0%)</span></td><td>None</td></tr>
+            <tr><td><b>#4 (Latest)</b></td><td>2026-10-28 08:36</td><td>15 / 15</td><td>100.0%</td><td>44.0s</td><td><span class="pill pill-success">Low Risk (15.0%)</span></td><td>None</td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="card">
+        <h3 style="color: var(--primary); margin-bottom: 12px;">📈 Longitudinal Performance Progression Trend</h3>
+        <img src="project_report_images/Chart_7_2_7_Historical_Progression.png" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);" alt="Historical Progression" onerror="this.src='../project_report_images/Chart_7_2_7_Historical_Progression.png'" />
+      </div>
+    </section>
+
+    <!-- TAB 7: REPORT FIGURES GALLERY -->
+    <section id="tab-gallery" class="tab-page">
+      <div class="view-header">
+        <span class="badge-tag">Project Report Assets &bull; All 20 Figures</span>
+        <h2>Project Documentation Figures & Screenshots Gallery</h2>
+        <p>Directly insert these generated images into your B.Sc. Computer Science Semester V Project Report!</p>
+      </div>
+      
+      <div class="card">
+        <h3 style="color: var(--primary); margin-bottom: 14px;">📸 Chapter 7 Results Screenshots (Exact "Screenshot to insert" Placements)</h3>
+        <div class="grid-2">
+          <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; border: 1px solid var(--border);">
+            <b style="color: var(--primary);">7.2.1 User Authentication Page</b>
+            <p style="font-size: 0.8rem; color: var(--muted); margin: 4px 0 8px 0;">Screenshot_7_2_1_User_Authentication.png</p>
+            <a href="project_report_images/Screenshot_7_2_1_User_Authentication.png" target="_blank"><img src="project_report_images/Screenshot_7_2_1_User_Authentication.png" style="width: 100%; border-radius: 6px; border: 1px solid var(--border);" onerror="this.src='../project_report_images/Screenshot_7_2_1_User_Authentication.png'" /></a>
+          </div>
+          <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; border: 1px solid var(--border);">
+            <b style="color: var(--primary);">7.2.2 Application Dashboard</b>
+            <p style="font-size: 0.8rem; color: var(--muted); margin: 4px 0 8px 0;">Screenshot_7_2_2_Application_Dashboard.png</p>
+            <a href="project_report_images/Screenshot_7_2_2_Application_Dashboard.png" target="_blank"><img src="project_report_images/Screenshot_7_2_2_Application_Dashboard.png" style="width: 100%; border-radius: 6px; border: 1px solid var(--border);" onerror="this.src='../project_report_images/Screenshot_7_2_2_Application_Dashboard.png'" /></a>
+          </div>
+          <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; border: 1px solid var(--border);">
+            <b style="color: var(--primary);">7.2.3 Mathematical Assessment Interface</b>
+            <p style="font-size: 0.8rem; color: var(--muted); margin: 4px 0 8px 0;">Screenshot_7_2_3_Mathematical_Assessment.png</p>
+            <a href="project_report_images/Screenshot_7_2_3_Mathematical_Assessment.png" target="_blank"><img src="project_report_images/Screenshot_7_2_3_Mathematical_Assessment.png" style="width: 100%; border-radius: 6px; border: 1px solid var(--border);" onerror="this.src='../project_report_images/Screenshot_7_2_3_Mathematical_Assessment.png'" /></a>
+          </div>
+          <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; border: 1px solid var(--border);">
+            <b style="color: var(--primary);">7.2.4 Screening Result Page</b>
+            <p style="font-size: 0.8rem; color: var(--muted); margin: 4px 0 8px 0;">Screenshot_7_2_4_Screening_Result.png</p>
+            <a href="project_report_images/Screenshot_7_2_4_Screening_Result.png" target="_blank"><img src="project_report_images/Screenshot_7_2_4_Screening_Result.png" style="width: 100%; border-radius: 6px; border: 1px solid var(--border);" onerror="this.src='../project_report_images/Screenshot_7_2_4_Screening_Result.png'" /></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 8: AUTHENTICATION -->
+    <section id="tab-auth" class="tab-page">
+      <div class="view-header">
+        <span class="badge-tag">Section 7.2.1 &bull; User Authentication</span>
+        <h2>User Authentication & Profile Setup</h2>
+        <p>Login or register with cryptographic password hashing (Argon2 / SHA-256).</p>
+      </div>
+      
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="color: var(--primary); margin-bottom: 14px;">Sign In to Screening Tool</h3>
+          <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-control" value="rohan@example.com" /></div>
+          <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-control" value="rohan123" /></div>
+          <div class="form-group"><label class="form-label">Role</label><select class="form-control"><option>Student</option><option>Educator</option><option>Clinician</option></select></div>
+          <button class="btn-primary" style="width: 100%; margin-top: 10px;">Sign In &rarr;</button>
+        </div>
+        
+        <div class="card">
+          <h3 style="color: var(--success); margin-bottom: 14px;">New Registration</h3>
+          <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-control" value="Aadarsh Dubey" /></div>
+          <div class="form-group"><label class="form-label">Academic Email</label><input type="email" class="form-control" value="aadarsh@rizvi.edu" /></div>
+          <div class="form-group"><label class="form-label">Age</label><input type="number" class="form-control" value="11" /></div>
+          <button class="btn-secondary" style="width: 100%; margin-top: 10px; background: #DCFCE7; color: #166534; font-weight: 700;">Register New Account &rarr;</button>
+        </div>
+      </div>
+    </section>
+    
+  </main>
+</div>
+
+<script>
+  function showTab(tabId) {
+    document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    
+    const target = document.getElementById('tab-' + tabId);
+    if (target) target.classList.add('active');
+    
+    const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
+    if (btn) btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  const questions = [
+    {
+      domain: "Number Recognition & Subitizing",
+      title: "How many red dots do you see in the cluster below? (Answer without counting one by one)",
+      stimulus: `<svg width="220" height="130" viewBox="0 0 220 130"><circle cx="45" cy="35" r="15" fill="#EF4444"/><circle cx="175" cy="35" r="15" fill="#EF4444"/><circle cx="110" cy="65" r="15" fill="#EF4444"/><circle cx="45" cy="95" r="15" fill="#EF4444"/><circle cx="175" cy="95" r="15" fill="#EF4444"/></svg>`,
+      options: ["4 Dots", "5 Dots", "6 Dots", "7 Dots"],
+      correct: 1
+    },
+    {
+      domain: "Numerical Magnitude Comparison",
+      title: "Which of the two numbers represents the larger magnitude?",
+      stimulus: `<div style="font-size: 3rem; font-weight: 800; color: #1E40AF; letter-spacing: 20px;">83 &nbsp; 38</div>`,
+      options: ["83 is Greater", "38 is Greater", "Both are Equal", "Cannot Determine"],
+      correct: 0
+    },
+    {
+      domain: "Basic Arithmetic Operations",
+      title: "Solve the mental addition fact: 14 + 17 = ?",
+      stimulus: `<div style="font-size: 2.6rem; font-weight: 800; color: #D97706;">14 + 17 = [ ? ]</div>`,
+      options: ["29", "31", "33", "21"],
+      correct: 1
+    },
+    {
+      domain: "Quantity Understanding & Estimation",
+      title: "On a number line from 0 to 100, where does the number 75 sit?",
+      stimulus: `<svg width="300" height="60" viewBox="0 0 300 60"><line x1="20" y1="30" x2="280" y2="30" stroke="#94A3B8" stroke-width="4"/><circle cx="20" cy="30" r="6" fill="#3B82F6"/><text x="15" y="55" fill="#64748B" font-size="12">0</text><circle cx="280" cy="30" r="6" fill="#3B82F6"/><text x="268" y="55" fill="#64748B" font-size="12">100</text><circle cx="215" cy="30" r="8" fill="#EF4444"/><text x="208" y="20" fill="#EF4444" font-weight="bold" font-size="14">?</text></svg>`,
+      options: ["Quarter way (25%)", "Halfway (50%)", "Three-quarters way (75%)", "Near the beginning"],
+      correct: 2
+    },
+    {
+      domain: "Mathematical Reasoning & Sequences",
+      title: "Identify the missing number in the progression: 4, 8, 12, 16, __?",
+      stimulus: `<div style="font-size: 2.4rem; font-weight: 800; color: #16A34A; letter-spacing: 10px;">4, 8, 12, 16, [ ? ]</div>`,
+      options: ["18", "20", "22", "24"],
+      correct: 1
+    }
+  ];
+
+  let currentQ = 0;
+  let selectedOpt = null;
+
+  function renderQuestion() {
+    const q = questions[currentQ];
+    document.getElementById('q-domain').innerText = q.domain;
+    document.getElementById('q-progress').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+    document.getElementById('q-title').innerText = q.title;
+    document.getElementById('q-stimulus').innerHTML = q.stimulus;
+    
+    const optsBox = document.getElementById('q-options');
+    optsBox.innerHTML = '';
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement('div');
+      btn.className = 'opt-btn';
+      btn.innerHTML = `<span style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid #CBD5E1; display: inline-block;"></span> <span>${opt}</span>`;
+      btn.onclick = () => {
+        document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedOpt = idx;
+      };
+      optsBox.appendChild(btn);
+    });
+  }
+
+  function nextQuestion() {
+    if (selectedOpt === null) {
+      alert("Please select an option before proceeding!");
+      return;
+    }
+    selectedOpt = null;
+    if (currentQ < questions.length - 1) {
+      currentQ++;
+      renderQuestion();
+    } else {
+      alert("Diagnostic Assessment Completed! Navigating to Risk Report...");
+      showTab('results');
+    }
+  }
+
+  function prevQuestion() {
+    if (currentQ > 0) {
+      currentQ--;
+      renderQuestion();
+    }
+  }
+
+  function updateSim() {
+    const sub = parseInt(document.getElementById('rng-sub').value);
+    const subRt = parseInt(document.getElementById('rng-sub-rt').value);
+    const arith = parseInt(document.getElementById('rng-arith').value);
+    const arithRt = parseInt(document.getElementById('rng-arith-rt').value);
+    
+    document.getElementById('lbl-sub').innerText = sub + '%';
+    document.getElementById('lbl-sub-rt').innerText = subRt + ' ms';
+    document.getElementById('lbl-arith').innerText = arith + '%';
+    document.getElementById('lbl-arith-rt').innerText = arithRt + ' ms';
+    
+    const riskScore = ((100 - arith) * 0.45) + ((100 - sub) * 0.25) + ((arithRt / 6000) * 100 * 0.2) + ((subRt / 4000) * 100 * 0.1);
+    const prob = Math.min(99.4, Math.max(8.0, riskScore)).toFixed(1);
+    document.getElementById('sim-prob').innerText = prob + '%';
+    
+    const outcomeEl = document.getElementById('sim-outcome');
+    if (prob >= 65) {
+      outcomeEl.innerText = "HIGH DYSCALCULIA RISK";
+      outcomeEl.style.color = "#DC2626";
+    } else if (prob >= 40) {
+      outcomeEl.innerText = "MODERATE DYSCALCULIA RISK";
+      outcomeEl.style.color = "#D97706";
+    } else {
+      outcomeEl.innerText = "LOW RISK / TYPICAL PROFILE";
+      outcomeEl.style.color = "#16A34A";
+    }
+  }
+
+  renderQuestion();
+</script>
+</body>
+</html>
