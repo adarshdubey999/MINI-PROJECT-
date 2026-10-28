@@ -1,0 +1,15 @@
+# Tech Stack Specified in Chapter 4 Survey of Technology:
+# 4.2 Python 3.13
+# 4.3 Streamlit
+# 4.4 Pandas
+# 4.5 NumPy
+# 4.6 Scikit-learn
+# 4.7 Matplotlib
+# 4.8 SQLite (Built-in Python sqlite3)
+
+streamlit>=1.35.0
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+matplotlib>=3.7.0
+joblib>=1.3.0
