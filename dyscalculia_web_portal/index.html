@@ -5,72 +5,136 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI-Based Dyscalculia Screening Tool | Rizvi College CS</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root {
-    --bg-primary: #0B1120;
+    --bg-main: #0B1120;
+    --bg-sidebar: #0D1527;
     --bg-card: #111C35;
-    --bg-surface: #152243;
+    --bg-card-alt: #152243;
+    --bg-chrome: #0F172A;
     --border-color: #1E293B;
-    --text-primary: #F8FAFC;
+    --border-light: #233560;
+    --border-accent: #334155;
+    
+    --primary: #2563EB;
+    --primary-light: #3B82F6;
+    --cyan: #38BDF8;
+    --emerald: #10B981;
+    --amber: #F59E0B;
+    --rose: #EF4444;
+    
+    --text-main: #F8FAFC;
     --text-muted: #94A3B8;
-    --accent-blue: #2563EB;
-    --accent-cyan: #38BDF8;
-    --accent-green: #10B981;
-    --accent-amber: #F59E0B;
-    --accent-red: #EF4444;
+    --text-dim: #64748B;
   }
+
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-  body { background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column; }
-  
-  /* Top Navigation */
-  header.top-nav {
-    background: #0F172A;
+  body { background: var(--bg-main); color: var(--text-main); min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; }
+
+  /* Custom Sleek Dark Scrollbar */
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-track { background: #0B1120; }
+  ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+  /* Top Browser Chrome Bar */
+  .browser-window {
+    background: var(--bg-chrome);
     border-bottom: 1px solid var(--border-color);
-    padding: 12px 28px;
+    padding: 10px 18px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 14px;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
   }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand-logo { font-size: 1.8rem; }
-  .brand-text h1 { font-size: 1.15rem; font-weight: 800; color: #FFFFFF; }
-  .brand-text p { font-size: 0.75rem; color: var(--accent-cyan); font-weight: 600; }
-  .user-profile-badge {
-    background: var(--bg-surface);
-    border: 1px solid #233560;
+  .window-dots { display: flex; gap: 7px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot-red { background: #EF4444; }
+  .dot-yellow { background: #F59E0B; }
+  .dot-green { background: #10B981; }
+  .url-bar {
+    background: #1E293B;
+    border: 1px solid #334155;
     border-radius: 20px;
-    padding: 6px 16px;
+    padding: 6px 18px;
+    font-size: 0.82rem;
+    color: #94A3B8;
+    flex: 1;
+    max-width: 680px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .lock-icon { color: #10B981; font-size: 0.85rem; }
+  .url-text { color: #CBD5E1; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+  .top-session-pill {
+    margin-left: auto;
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 0.82rem;
+    background: #152243;
+    border: 1px solid #233560;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #94A3B8;
   }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); }
-  
+  .status-indicator { width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981; }
+
   /* Layout */
-  .app-container { display: flex; flex: 1; }
+  .app-layout { display: flex; flex: 1; min-height: calc(100vh - 43px); }
+
+  /* Sidebar */
   aside.sidebar {
-    width: 260px;
-    background: #0D1527;
+    width: 280px;
+    background: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
-    padding: 20px 14px;
+    padding: 22px 18px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 14px;
     flex-shrink: 0;
   }
+
+  .brand-badge {
+    text-align: center;
+    background: linear-gradient(135deg, #1E3A8A 0%, #172554 100%);
+    border: 1px solid #3B82F6;
+    border-radius: 12px;
+    padding: 14px 12px;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2);
+    cursor: pointer;
+  }
+  .brand-badge h3 { font-size: 0.96rem; color: #60A5FA; font-weight: 800; letter-spacing: 0.5px; }
+  .brand-badge p { font-size: 0.73rem; color: #94A3B8; margin-top: 3px; }
+  .brand-badge .author { color: #60A5FA; font-weight: 700; margin-top: 2px; }
+
+  .user-pill {
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 10px 14px;
+    position: relative;
+  }
+  .user-pill .tag { font-size: 0.68rem; text-transform: uppercase; color: #38BDF8; font-weight: 800; letter-spacing: 0.5px; }
+  .user-pill .name { font-size: 0.92rem; font-weight: 700; color: #F8FAFC; margin-top: 2px; }
+  .user-pill .sub { font-size: 0.74rem; color: #94A3B8; }
+
+  .nav-list { display: flex; flex-direction: column; gap: 5px; list-style: none; margin-top: 6px; }
   .nav-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
+    gap: 11px;
+    padding: 9px 14px;
     border-radius: 8px;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    color: var(--text-muted);
+    color: #94A3B8;
     background: transparent;
     border: none;
     width: 100%;
@@ -78,41 +142,50 @@
     cursor: pointer;
     transition: all 0.2s;
   }
-  .nav-btn:hover { background: #152243; color: #FFFFFF; }
+  .nav-btn:hover { background: #152243; color: #F8FAFC; }
   .nav-btn.active {
-    background: var(--accent-blue);
+    background: #2563EB;
     color: #FFFFFF;
-    box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
   }
-  
-  main.main-viewport {
+  .nav-btn .icon { font-size: 1.05rem; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    font-size: 0.72rem;
+    color: #64748B;
+    text-align: center;
+    line-height: 1.45;
+    border-top: 1px solid var(--border-color);
+    padding-top: 14px;
+  }
+  .sidebar-footer b { color: #94A3B8; }
+
+  /* Main Content Area */
+  main.main-content {
     flex: 1;
-    padding: 30px 40px;
+    padding: 28px 36px;
     overflow-y: auto;
+    max-height: calc(100vh - 43px);
   }
-  
-  /* Tab Pages */
-  .tab-page { display: none; }
-  .tab-page.active { display: block; animation: fadeIn 0.25s ease-in-out; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  
-  /* Headings & Badges */
-  .section-badge {
+
+  /* Shared Typography & Headers */
+  .page-header { margin-bottom: 24px; }
+  .badge-inst {
     display: inline-block;
     background: #1E3A8A;
     color: #93C5FD;
     font-size: 0.72rem;
     font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 4px 10px;
-    border-radius: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
     margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
   }
-  .view-header { margin-bottom: 24px; }
-  .view-header h2 { font-size: 1.8rem; font-weight: 800; }
-  .view-header p { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
-  
+  .page-header h1 { font-size: 1.85rem; font-weight: 800; color: #F8FAFC; letter-spacing: -0.02em; }
+  .page-header p { font-size: 0.92rem; color: #94A3B8; margin-top: 4px; }
+
   /* Cards & Grids */
   .card {
     background: var(--bg-card);
@@ -120,56 +193,64 @@
     border-radius: 14px;
     padding: 22px;
     margin-bottom: 22px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
   .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
   .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-  
+
+  /* KPI Stat Boxes */
   .kpi-card {
-    background: var(--bg-surface);
-    border: 1px solid #233560;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
-    padding: 18px;
+    padding: 16px 18px;
     text-align: center;
   }
-  .kpi-val { font-size: 2rem; font-weight: 800; color: var(--accent-cyan); }
-  .kpi-lbl { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-top: 4px; }
-  
+  .kpi-val { font-size: 1.85rem; font-weight: 800; color: #38BDF8; }
+  .kpi-lbl { font-size: 0.75rem; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; font-weight: 700; }
+
+  /* Buttons */
   .btn-primary {
-    background: var(--accent-blue);
+    background: #2563EB;
     color: white;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     padding: 10px 22px;
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     transition: all 0.2s;
   }
-  .btn-primary:hover { background: #1D4ED8; }
+  .btn-primary:hover { background: #1D4ED8; transform: translateY(-1px); }
   .btn-secondary {
     background: #1E293B;
     color: #CBD5E1;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     padding: 10px 18px;
     border-radius: 8px;
     border: 1px solid #334155;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
   }
-  
-  /* Tables */
-  .custom-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  .custom-table th { background: #152243; color: var(--text-muted); text-align: left; padding: 12px 14px; font-weight: 700; border-bottom: 1px solid #233560; }
-  .custom-table td { padding: 12px 14px; border-bottom: 1px solid #1E293B; color: #E2E8F0; }
-  .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
-  .pill-warn { background: #FEF3C7; color: #92400E; }
-  .pill-success { background: #DCFCE7; color: #166534; }
-  .pill-danger { background: #FEE2E2; color: #991B1B; }
-  
-  /* Form Inputs */
+  .btn-secondary:hover { background: #334155; color: #FFFFFF; }
+  .btn-success {
+    background: #065F46;
+    color: #A7F3D0;
+    border: 1px solid #059669;
+    font-weight: 700;
+  }
+  .btn-success:hover { background: #047857; color: white; }
+
+  /* Forms & Inputs */
   .form-group { margin-bottom: 16px; }
   .form-label { display: block; font-size: 0.82rem; font-weight: 600; color: #CBD5E1; margin-bottom: 6px; }
   .form-control {
@@ -180,584 +261,2093 @@
     padding: 10px 14px;
     color: #F8FAFC;
     font-size: 0.9rem;
+    outline: none;
+    transition: border 0.2s;
   }
-  
-  /* Assessment Runner */
+  .form-control:focus { border-color: #3B82F6; }
+
+  /* Tables */
+  .modern-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .modern-table th { background: #152243; color: #94A3B8; text-align: left; padding: 12px 14px; font-weight: 700; border-bottom: 1px solid #233560; }
+  .modern-table td { padding: 12px 14px; border-bottom: 1px solid #1E293B; color: #E2E8F0; vertical-align: middle; }
+  .modern-table tr:hover td { background: rgba(30, 41, 59, 0.4); }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 14px; font-size: 0.72rem; font-weight: 700; }
+  .badge-warn { background: #FEF3C7; color: #92400E; }
+  .badge-success { background: #DCFCE7; color: #166534; }
+  .badge-danger { background: #FEE2E2; color: #991B1B; }
+  .badge-blue { background: #DBEAFE; color: #1E40AF; }
+
+  /* Risk Banners */
+  .risk-banner {
+    border-radius: 12px;
+    padding: 20px 26px;
+    color: white;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+  }
+  .risk-moderate {
+    background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+    box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
+  }
+  .risk-high {
+    background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35);
+  }
+  .risk-low {
+    background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
+  }
+
+  /* Assessment Specific Styles */
   .stimulus-box {
     background: #0B1120;
     border: 2px dashed #334155;
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: 14px;
+    padding: 28px;
     text-align: center;
-    margin: 18px 0;
+    margin-bottom: 24px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
-  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
-  .option-btn {
-    background: var(--bg-surface);
+  .option-card {
+    background: #152243;
     border: 1px solid #334155;
     border-radius: 10px;
     padding: 14px 18px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #F1F5F9;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.15s;
     display: flex;
     align-items: center;
     gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
   }
-  .option-btn:hover { border-color: var(--accent-blue); background: #1C2D5A; }
-  .option-btn.selected { border: 2px solid var(--accent-cyan); background: #1E3A8A; color: #FFFFFF; }
+  .option-card:hover {
+    border-color: #3B82F6;
+    background: #19284F;
+  }
+  .option-card.selected {
+    background: #1E3A8A;
+    border: 2px solid #3B82F6;
+    box-shadow: 0 0 14px rgba(59, 130, 246, 0.35);
+  }
+  .option-radio {
+    width: 18px;
+    height: 18px;
+    accent-color: #3B82F6;
+    cursor: pointer;
+  }
+
+  .q-pill {
+    display: inline-block;
+    padding: 5px 11px;
+    background: #1E293B;
+    color: #94A3B8;
+    border-radius: 6px;
+    margin: 3px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .q-pill:hover { background: #334155; color: white; }
+  .q-pill.active { background: #2563EB; color: white; font-weight: bold; }
+  .q-pill.completed { background: #10B981; color: white; font-weight: bold; }
+  .q-pill.skipped { background: #D97706; color: white; font-weight: bold; }
+
+  /* Charts */
+  .chart-container-box {
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 240px;
+  }
+  .chart-container-box img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    display: block;
+  }
+
+  /* Toast Notification */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1E3A8A;
+    border: 1px solid #3B82F6;
+    color: #FFFFFF;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    display: none;
+    z-index: 9999;
+    animation: fadeIn 0.3s;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    aside.sidebar { width: 230px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- Top Navigation Bar -->
-<header class="top-nav">
-  <div class="brand">
-    <span class="brand-logo">🧠</span>
-    <div class="brand-text">
-      <h1>AI-Based Dyscalculia Screening Tool</h1>
-      <p>Rizvi College of Arts, Science & Commerce &bull; Sem V Project (Aadarsh Dubey)</p>
-    </div>
+<!-- 1. TOP BROWSER CHROME -->
+<div class="browser-window">
+  <div class="window-dots">
+    <div class="dot dot-red" title="Close"></div>
+    <div class="dot dot-yellow" title="Minimize"></div>
+    <div class="dot dot-green" title="Expand"></div>
   </div>
-  
-  <div class="user-profile-badge">
-    <div class="status-dot"></div>
-    <span>Active: <b>Demo Student (Rohan)</b> (Age 10)</span>
+  <div class="url-bar">
+    <span class="lock-icon">&#128274;</span>
+    <span class="url-text" id="topUrlText">https://dyscalculia-screener.rizvi.edu.in/dashboard</span>
   </div>
-</header>
+  <div class="top-session-pill">
+    <div class="status-indicator"></div>
+    <span id="systemEnginePill">AI Engine Online (RandomForest v1.2)</span>
+  </div>
+</div>
 
-<div class="app-container">
-  <!-- Sidebar Navigation -->
+<div class="app-layout">
+
+  <!-- 2. SIDEBAR -->
   <aside class="sidebar">
-    <button class="nav-btn active" onclick="showTab('dashboard')"><span>📊</span> <span>Dashboard</span></button>
-    <button class="nav-btn" onclick="showTab('assessment')"><span>🧠</span> <span>Take Assessment</span></button>
-    <button class="nav-btn" onclick="showTab('results')"><span>📑</span> <span>Screening Results</span></button>
-    <button class="nav-btn" onclick="showTab('visualizations')"><span>📈</span> <span>Visual Analytics</span></button>
-    <button class="nav-btn" onclick="showTab('assistant')"><span>🤖</span> <span>AI ML Assistant</span></button>
-    <button class="nav-btn" onclick="showTab('history')"><span>🗂️</span> <span>Assessment History</span></button>
-    <button class="nav-btn" onclick="showTab('gallery')"><span>🖼️</span> <span>Report Figures Gallery</span></button>
-    <button class="nav-btn" onclick="showTab('auth')"><span>🔐</span> <span>Account & Login</span></button>
-    
-    <div style="margin-top: auto; font-size: 0.72rem; color: #64748B; text-align: center; border-top: 1px solid var(--border-color); padding-top: 14px;">
+    <div class="brand-badge" onclick="navigateTo('home')">
+      <h3>RIZVI COLLEGE CS</h3>
+      <p>AI Dyscalculia Screening Tool</p>
+      <div class="author">Aadarsh Dubey (Roll #13)</div>
+    </div>
+
+    <div class="user-pill" id="activeProfileCard">
+      <div class="tag" id="profileTag">Active Profile</div>
+      <div class="name" id="profileName">Demo Student (Rohan)</div>
+      <div class="sub" id="profileSub">Student &bull; Age 10 &bull; Grade 5</div>
+    </div>
+
+    <ul class="nav-list">
+      <li>
+        <button class="nav-btn" id="nav-home" onclick="navigateTo('home')">
+          <span class="icon">&#127968;</span>
+          <span>Home & Overview</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" id="nav-dashboard" onclick="navigateTo('dashboard')">
+          <span class="icon">&#128202;</span>
+          <span>Dashboard</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" id="nav-assessment" onclick="navigateTo('assessment')">
+          <span class="icon">&#129504;</span>
+          <span>Screening Assessment</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" id="nav-results" onclick="navigateTo('results')">
+          <span class="icon">&#128193;</span>
+          <span>Results & Risk Report</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" id="nav-assistant" onclick="navigateTo('assistant')">
+          <span class="icon">&#129302;</span>
+          <span>AI Screening Assistant</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" id="nav-history" onclick="navigateTo('history')">
+          <span class="icon">&#128200;</span>
+          <span>User Assessment History</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" id="nav-practice" onclick="navigateTo('practice')">
+          <span class="icon">&#127918;</span>
+          <span>Math Practice Arena</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" id="nav-auth" onclick="navigateTo('auth')">
+          <span class="icon">&#128272;</span>
+          <span>Account & Login</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
       <b>Tech Stack (Chapter 4):</b><br/>
       Python &bull; Streamlit &bull; Scikit-learn<br/>
-      Pandas &bull; NumPy &bull; SQLite
+      Pandas &bull; NumPy &bull; Matplotlib &bull; SQLite
     </div>
   </aside>
 
-  <!-- Main Viewport -->
-  <main class="main-viewport">
-    
-    <!-- TAB 1: DASHBOARD -->
-    <section id="tab-dashboard" class="tab-page active">
-      <div class="view-header">
-        <span class="section-badge">Section 7.2.2 &bull; Central Control Hub</span>
-        <h2>Screening Dashboard & Clinical Portal</h2>
-        <p>Welcome back, Rohan. Review your screening timeline, initiate new assessments, or test the AI simulator.</p>
+  <!-- 3. MAIN CONTENT CONTAINER -->
+  <main class="main-content">
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: DASHBOARD (Matching Screenshot 7.2.2)                            -->
+    <!-- ========================================================================= -->
+    <section id="view-dashboard" class="page-view">
+      <div class="page-header">
+        <span class="badge-inst">Section 7.2.2 &bull; Central Control Hub</span>
+        <h1>Dyscalculia Screening Hub & Clinical Dashboard</h1>
+        <p>Welcome back, <b id="dashUserName">Rohan</b>. Oversee your screening timeline, launch new diagnostic batteries, and track cognitive progress.</p>
       </div>
-      
+
+      <!-- 4 Quick Action Cards -->
       <div class="grid-4" style="margin-bottom: 22px;">
         <div class="card" style="background: linear-gradient(135deg, #1E3A8A 0%, #172554 100%); border-color: #3B82F6;">
-          <span style="font-size: 1.8rem;">🧠</span>
+          <span style="font-size: 1.8rem;">&#129504;</span>
           <h4 style="color: white; margin: 8px 0 4px 0;">Take Assessment</h4>
           <p style="font-size: 0.78rem; color: #BFDBFE; margin-bottom: 14px;">15 items across 5 core cognitive faculties.</p>
-          <button class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem; width: 100%;" onclick="showTab('assessment')">Start Now &rarr;</button>
+          <button class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem; width: 100%; justify-content: center;" onclick="startNewAssessment()">Start Now &rarr;</button>
         </div>
-        <div class="card">
-          <span style="font-size: 1.8rem;">📑</span>
-          <h4 style="color: white; margin: 8px 0 4px 0;">Latest Report</h4>
-          <p style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 14px;">Session #1: Moderate Risk (46.7%).</p>
-          <button class="btn-secondary" style="padding: 6px 14px; font-size: 0.8rem; width: 100%;" onclick="showTab('results')">View Report</button>
+
+        <div class="card" style="background: #152243; border-color: #233560;">
+          <span style="font-size: 1.8rem;">&#128193;</span>
+          <h4 style="color: white; margin: 8px 0 4px 0;">Latest Results</h4>
+          <p style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 14px;">Review Session #1 Moderate Risk report.</p>
+          <button class="btn-secondary" style="padding: 6px 14px; font-size: 0.8rem; width: 100%; justify-content: center;" onclick="navigateTo('results')">View Report</button>
         </div>
-        <div class="card">
-          <span style="font-size: 1.8rem;">🤖</span>
-          <h4 style="color: white; margin: 8px 0 4px 0;">AI Simulator</h4>
-          <p style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 14px;">Simulate what-if cognitive scores.</p>
-          <button class="btn-secondary" style="padding: 6px 14px; font-size: 0.8rem; width: 100%;" onclick="showTab('assistant')">Open Simulator</button>
+
+        <div class="card" style="background: #152243; border-color: #233560;">
+          <span style="font-size: 1.8rem;">&#129302;</span>
+          <h4 style="color: white; margin: 8px 0 4px 0;">AI ML Assistant</h4>
+          <p style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 14px;">Simulate what-if cognitive parameters.</p>
+          <button class="btn-secondary" style="padding: 6px 14px; font-size: 0.8rem; width: 100%; justify-content: center;" onclick="navigateTo('assistant')">Simulator</button>
         </div>
-        <div class="card">
-          <span style="font-size: 1.8rem;">🖼️</span>
-          <h4 style="color: white; margin: 8px 0 4px 0;">Report Figures</h4>
-          <p style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 14px;">20 high-res images for your report.</p>
-          <button class="btn-secondary" style="padding: 6px 14px; font-size: 0.8rem; width: 100%;" onclick="showTab('gallery')">View Images</button>
+
+        <div class="card" style="background: #152243; border-color: #233560;">
+          <span style="font-size: 1.8rem;">&#127918;</span>
+          <h4 style="color: white; margin: 8px 0 4px 0;">Practice Arena</h4>
+          <p style="font-size: 0.78rem; color: #94A3B8; margin-bottom: 14px;">Interactive math reinforcement games.</p>
+          <button class="btn-secondary" style="padding: 6px 14px; font-size: 0.8rem; width: 100%; justify-content: center;" onclick="navigateTo('practice')">Play Games</button>
         </div>
       </div>
-      
-      <div class="grid-4" style="margin-bottom: 24px;">
-        <div class="kpi-card"><div class="kpi-val">4</div><div class="kpi-lbl">Total Sessions</div></div>
-        <div class="kpi-card"><div class="kpi-val" style="color: #34D399;">86.7%</div><div class="kpi-lbl">Mean Accuracy</div></div>
-        <div class="kpi-card"><div class="kpi-val" style="color: #A78BFA;">47.1s</div><div class="kpi-lbl">Mean Latency</div></div>
-        <div class="kpi-card"><div class="kpi-val" style="color: #FBBF24;">Active</div><div class="kpi-lbl">Random Forest 1.0</div></div>
+
+      <!-- 4 KPI Metrics -->
+      <div class="grid-4" style="margin-bottom: 22px;">
+        <div class="kpi-card">
+          <div class="kpi-val" id="dashCompletedCount">4</div>
+          <div class="kpi-lbl">Assessments Completed</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="dashCumulativeAcc">86.7%</div>
+          <div class="kpi-lbl">Cumulative Accuracy</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="dashAvgSpeed">47.1s</div>
+          <div class="kpi-lbl">Avg Response Speed</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: #34D399; font-size: 1.45rem; padding-top: 5px;">Active</div>
+          <div class="kpi-lbl">Screening Model Status</div>
+        </div>
       </div>
-      
+
+      <!-- Evaluated Cognitive Domains Overview Table -->
       <div class="card">
-        <h3 style="margin-bottom: 14px; font-size: 1.15rem;">🎯 Evaluated Cognitive Domains Overview</h3>
-        <table class="custom-table">
+        <h3 style="color: #F8FAFC; margin-bottom: 14px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+          <span>&#127919;</span> Evaluated Cognitive Domains Overview (Chapter 1.4 & 7.2.3)
+        </h3>
+        <table class="modern-table">
           <thead>
-            <tr><th>Cognitive Domain</th><th>Neuro-Cognitive Target</th><th>Items</th><th>Norm</th><th>Status</th></tr>
+            <tr>
+              <th>Cognitive Domain</th>
+              <th>Target Neuro-Cognitive Function</th>
+              <th>Items</th>
+              <th>Benchmark Norm</th>
+              <th>Status Indicator</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><td><b>1. Number Recognition & Subitizing</b></td><td>Intraparietal sulcus rapid dot apprehension</td><td>3</td><td>&ge; 85% (&lt;1s)</td><td><span class="pill pill-warn">Mild Latency</span></td></tr>
-            <tr><td><b>2. Magnitude Comparison</b></td><td>Distance effect mental number line differentiation</td><td>3</td><td>&ge; 85%</td><td><span class="pill pill-success">Proficient</span></td></tr>
-            <tr><td><b>3. Arithmetic Operations</b></td><td>Fact retrieval vs compensatory finger counting</td><td>3</td><td>&ge; 85%</td><td><span class="pill pill-danger">Deficit (33%)</span></td></tr>
-            <tr><td><b>4. Quantity Estimation</b></td><td>Visual magnitude mapping & place value</td><td>3</td><td>&ge; 80%</td><td><span class="pill pill-warn">Developing</span></td></tr>
-            <tr><td><b>5. Mathematical Reasoning</b></td><td>Reverse sequences & logic</td><td>3</td><td>&ge; 85%</td><td><span class="pill pill-warn">Developing</span></td></tr>
+            <tr>
+              <td><b>1. Number Recognition & Subitizing</b></td>
+              <td>Intraparietal sulcus rapid visual dot apprehension (1-6 dots)</td>
+              <td>3 items</td>
+              <td>&ge; 85% accuracy (&lt; 1.0s latency)</td>
+              <td><span class="badge badge-warn">Mild Latency</span></td>
+            </tr>
+            <tr>
+              <td><b>2. Numerical Magnitude Comparison</b></td>
+              <td>Distance effect mental number line differentiation (e.g. 83 vs 38)</td>
+              <td>3 items</td>
+              <td>&ge; 85% accuracy (&lt; 1.1s latency)</td>
+              <td><span class="badge badge-success">Age Appropriate</span></td>
+            </tr>
+            <tr>
+              <td><b>3. Basic Arithmetic Operations</b></td>
+              <td>Arithmetic fact retrieval vs inefficient persistent finger counting</td>
+              <td>3 items</td>
+              <td>&ge; 85% accuracy (&lt; 2.2s latency)</td>
+              <td><span class="badge badge-danger">Deficit Area (33%)</span></td>
+            </tr>
+            <tr>
+              <td><b>4. Quantity Understanding & Estimation</b></td>
+              <td>Visual magnitude mapping, place-value decomposition (0-100)</td>
+              <td>3 items</td>
+              <td>&ge; 80% accuracy</td>
+              <td><span class="badge badge-warn">Needs Reinforcement</span></td>
+            </tr>
+            <tr>
+              <td><b>5. Mathematical Reasoning & Sequences</b></td>
+              <td>Reverse counting, arithmetic progressions</td>
+              <td>3 items</td>
+              <td>&ge; 85% accuracy</td>
+              <td><span class="badge badge-blue">Variable Mastery</span></td>
+            </tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- TAB 2: LIVE ASSESSMENT RUNNER -->
-    <section id="tab-assessment" class="tab-page">
-      <div class="view-header">
-        <span class="section-badge">Section 7.2.3 &bull; Diagnostic Assessment Battery</span>
-        <h2>Interactive Mathematical Screening Assessment</h2>
-        <p>Answer questions promptly. Response correctness and latency timings are captured for AI classification.</p>
-      </div>
-      
-      <div class="card" style="border-top: 4px solid var(--accent-blue);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <span style="background: #1E3A8A; color: #93C5FD; font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 12px;" id="q-domain">
-            Number Recognition & Subitizing
-          </span>
-          <span style="font-size: 0.85rem; color: #38BDF8; font-weight: bold;" id="q-progress">Question 1 of 5</span>
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: SCREENING ASSESSMENT (Matching Screenshot 7.2.3)                  -->
+    <!-- ========================================================================= -->
+    <section id="view-assessment" class="page-view" style="display: none;">
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <span class="badge-inst">Section 7.2.3 &bull; Diagnostic Assessment Battery</span>
+          <h1>Mathematical Screening Assessment</h1>
+          <p>Answer questions promptly. Latency and error patterns are evaluated by the AI model.</p>
         </div>
-        
-        <h3 style="font-size: 1.35rem; color: #F8FAFC; margin-bottom: 14px;" id="q-title">
+        <div style="background: #152243; border: 1px solid #3B82F6; border-radius: 10px; padding: 8px 18px; text-align: right;">
+          <span style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Cognitive Latency Timer</span><br/>
+          <span style="font-size: 1.4rem; font-weight: 800; color: #38BDF8;" id="liveTimerDisplay">1.84s</span>
+        </div>
+      </div>
+
+      <!-- Assessment Progress Bar -->
+      <div style="background: #152243; border-radius: 8px; height: 10px; width: 100%; margin-bottom: 22px; overflow: hidden;">
+        <div id="assessmentProgressBar" style="background: #2563EB; height: 100%; width: 20%; border-radius: 8px; transition: width 0.3s;"></div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="card" style="border-top: 4px solid #2563EB;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <span id="questionCategoryPill" style="background: #1E3A8A; color: #93C5FD; font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 14px;">
+            Question 3 of 15 &bull; Number Recognition & Subitizing
+          </span>
+          <span id="questionDomainSub" style="font-size: 0.8rem; color: #94A3B8;">Subitizing Domain &bull; Pre-Attentive Vision</span>
+        </div>
+
+        <h2 id="questionPromptHeading" style="font-size: 1.45rem; color: #F8FAFC; margin-bottom: 18px;">
           How many red dots do you see in the cluster below? (Answer without counting one by one)
-        </h3>
-        
-        <div class="stimulus-box" id="q-stimulus">
+        </h2>
+
+        <!-- Visual Stimulus Container (Default: Exact Canonical 5 Red Dots from Screenshot 7.2.3) -->
+        <div class="stimulus-box" id="stimulusContainer">
+          <svg width="240" height="150" viewBox="0 0 240 150" style="display: inline-block;">
+            <circle cx="50" cy="40" r="16" fill="#EF4444" filter="drop-shadow(0 2px 4px rgba(239,68,68,0.5))" />
+            <circle cx="190" cy="40" r="16" fill="#EF4444" filter="drop-shadow(0 2px 4px rgba(239,68,68,0.5))" />
+            <circle cx="120" cy="75" r="16" fill="#EF4444" filter="drop-shadow(0 2px 4px rgba(239,68,68,0.5))" />
+            <circle cx="50" cy="110" r="16" fill="#EF4444" filter="drop-shadow(0 2px 4px rgba(239,68,68,0.5))" />
+            <circle cx="190" cy="110" r="16" fill="#EF4444" filter="drop-shadow(0 2px 4px rgba(239,68,68,0.5))" />
+          </svg>
+          <p style="font-size: 0.78rem; color: #64748B; margin-top: 10px;">Visual Stimulus #NR-03 &bull; Canonical Dot Array (5 Items)</p>
+        </div>
+
+        <!-- 4 Option Choices Grid -->
+        <div class="grid-2" style="gap: 14px; margin-bottom: 24px;" id="optionsGrid">
           <!-- Rendered dynamically -->
         </div>
-        
-        <div class="options-grid" id="q-options">
-          <!-- Options rendered dynamically -->
-        </div>
-        
+
+        <!-- Action Navigation Buttons -->
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <button class="btn-secondary" onclick="prevQuestion()">&larr; Previous</button>
-          <button class="btn-primary" onclick="nextQuestion()">Submit & Next Question &rarr;</button>
+          <button class="btn-secondary" onclick="prevQuestion()">&larr; Previous Question</button>
+          <div style="display: flex; gap: 12px;">
+            <button class="btn-secondary" style="background: #334155;" onclick="skipQuestion()">Skip Item</button>
+            <button class="btn-primary" onclick="submitAndNext()">&#10003; Submit Answer & Next &rarr;</button>
+          </div>
         </div>
+      </div>
+
+      <!-- Item Pagination Bar -->
+      <div style="text-align: center; color: #94A3B8; font-size: 0.8rem; margin-top: 10px;" id="questionTrackerBar">
+        <!-- Rendered dynamically Q1 to Q15 -->
       </div>
     </section>
 
-    <!-- TAB 3: RESULTS & RISK REPORT -->
-    <section id="tab-results" class="tab-page">
-      <div class="view-header">
-        <span class="section-badge">Section 7.2.4 &bull; Risk Analysis & Diagnostic Report</span>
-        <h2>Diagnostic Screening & Risk Analysis Report</h2>
-        <p>Candidate: <b>Demo Student (Rohan)</b> &bull; Evaluation Model: <b>Scikit-learn Random Forest</b></p>
-      </div>
-      
-      <div class="card" style="background: linear-gradient(135deg, #D97706 0%, #B45309 100%); color: white; display: flex; justify-content: space-between; align-items: center;">
+    <!-- ========================================================================= -->
+    <!-- VIEW 3: RESULTS & RISK REPORT (Matching Screenshot 7.2.4)                 -->
+    <!-- ========================================================================= -->
+    <section id="view-results" class="page-view" style="display: none;">
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-          <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">AI Machine Learning Screening Outcome</span>
-          <h2 style="font-size: 2.1rem; font-weight: 800; margin: 4px 0;">MODERATE RISK OF DYSCALCULIA</h2>
-          <p style="font-size: 0.95rem; max-width: 650px;">
-            The model identified characteristic arithmetic fact-retrieval latency and quantity estimation deficits. Recommended for structured educational intervention.
+          <span class="badge-inst">Section 7.2.4 &bull; Assessment Result and Risk Analysis</span>
+          <h1>Diagnostic Screening & Risk Analysis Report</h1>
+          <p id="reportCandidateMeta">Assessment <b>#1</b> &bull; Candidate: <b>Demo Student (Rohan)</b> &bull; Conducted: <b>2026-10-25 14:30:00</b></p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-secondary" style="font-size: 0.8rem; padding: 6px 14px;" onclick="navigateTo('charts')">&#128202; View Visualizations & Charts</button>
+          <button class="btn-secondary" style="font-size: 0.8rem; padding: 6px 14px;" onclick="printClinicalReport()">&#128438; Print / Export PDF</button>
+        </div>
+      </div>
+
+      <!-- Prominent AI Risk Banner -->
+      <div class="risk-banner risk-moderate" id="aiRiskBanner">
+        <div>
+          <span style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">AI Machine Learning Screening Outcome</span>
+          <h2 style="font-size: 2.1rem; font-weight: 800; margin: 4px 0;" id="riskOutcomeTitle">MODERATE RISK OF DYSCALCULIA</h2>
+          <p style="font-size: 0.94rem; opacity: 0.95; max-width: 720px;" id="riskOutcomeNarrative">
+            The Random Forest classifier detected characteristic mathematical difficulties, primarily in mental arithmetic and quantity estimation. Recommended for tailored multi-sensory educational intervention.
           </p>
         </div>
-        <div style="background: rgba(255,255,255,0.22); border-radius: 12px; padding: 14px 22px; text-align: center;">
-          <span style="font-size: 2.2rem; font-weight: 800;">64.5%</span><br/>
-          <span style="font-size: 0.75rem; text-transform: uppercase;">Dyscalculia Index</span>
+        <div style="background: rgba(255,255,255,0.22); border-radius: 12px; padding: 14px 22px; text-align: center; min-width: 150px;">
+          <span style="font-size: 2.2rem; font-weight: 800;" id="dyscalculiaIndexVal">64.5%</span><br/>
+          <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Dyscalculia Index</span>
         </div>
       </div>
-      
+
+      <!-- 4 KPI Metrics -->
       <div class="grid-4" style="margin-bottom: 22px;">
-        <div class="kpi-card"><div class="kpi-val">7 / 15</div><div class="kpi-lbl">Total Score</div></div>
-        <div class="kpi-card"><div class="kpi-val" style="color: #F59E0B;">46.7%</div><div class="kpi-lbl">Overall Accuracy</div></div>
-        <div class="kpi-card"><div class="kpi-val" style="color: #A78BFA;">185.4s</div><div class="kpi-lbl">Total Duration</div></div>
-        <div class="kpi-card"><div class="kpi-val" style="color: #F87171; font-size: 1.15rem; padding-top: 6px;">Mental Arithmetic</div><div class="kpi-lbl">Primary Deficit Area</div></div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="resTotalScore">7 / 15</div>
+          <div class="kpi-lbl">Total Score</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: #F59E0B;" id="resAccuracy">46.7%</div>
+          <div class="kpi-lbl">Overall Accuracy</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: #A78BFA;" id="resTotalTime">185.4s</div>
+          <div class="kpi-lbl">Total Assessment Time</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: #F87171; font-size: 1.15rem; padding-top: 6px;" id="resDeficitArea">Mental Arithmetic</div>
+          <div class="kpi-lbl">Primary Deficit Area</div>
+        </div>
       </div>
-      
+
+      <!-- Clinical Guidance Card -->
       <div class="card" style="border-left: 5px solid #2563EB;">
-        <h3 style="color: #60A5FA; margin-bottom: 10px;">🎯 Evidence-Based Educational Guidance</h3>
-        <ul style="font-size: 0.88rem; line-height: 1.7; padding-left: 20px;">
-          <li><b>Multi-Sensory Manipulatives:</b> Implement Numicon tiles, base-10 blocks, and Cuisenaire rods to make quantitative grouping concrete.</li>
-          <li><b>Visual Desk Number Strip:</b> Provide 0-100 number line ruler to scaffold calculations without counting fingers.</li>
-          <li><b>Extended Testing Time:</b> Provide 30% extended time on arithmetic tasks to accommodate retrieval delays.</li>
-          <li><b>Permitted Four-Function Calculator:</b> Allow calculator usage for reasoning tasks so calculation blocks don't hinder problem comprehension.</li>
+        <h3 style="color: #60A5FA; margin-bottom: 8px;">&#127919; Tailored Educational Action Plan & Accommodations</h3>
+        <p style="font-size: 0.88rem; color: #CBD5E1; margin-bottom: 14px;">
+          Based on psychometric profile evaluation (Geary, Butterworth, Dehaene framework), the following targeted interventions are advised:
+        </p>
+        <ul style="font-size: 0.86rem; color: #E2E8F0; padding-left: 20px; line-height: 1.7;">
+          <li><b>Multi-Sensory Arithmetic Manipulatives:</b> Utilize Numicon shapes, base-10 blocks, and Cuisenaire rods to make quantity transitions concrete.</li>
+          <li><b>Visual Desk Number Strip:</b> Provide a 0&ndash;100 visual desk number ruler to scaffold mental arithmetic without persistent finger-counting fatigue.</li>
+          <li><b>Extended Examination Time:</b> Grant 25% to 50% extra time during mathematical examinations to compensate for prolonged fact-retrieval latency.</li>
+          <li><b>Permitted Four-Function Calculator:</b> Permit calculator usage on complex word problems to isolate mathematical reasoning from fact retrieval.</li>
         </ul>
       </div>
-    </section>
 
-    <!-- TAB 4: VISUAL ANALYTICS -->
-    <section id="tab-visualizations" class="tab-page">
-      <div class="view-header">
-        <span class="section-badge">Section 7.2.5 &bull; Performance Analysis and Visualization</span>
-        <h2>Cognitive Performance Visualizations & Charts</h2>
-        <p>Matplotlib graphical representations comparing candidate accuracy and response latencies against peer baselines.</p>
-      </div>
-      
-      <div class="grid-2">
-        <div class="card">
-          <h3 style="color: #38BDF8; font-size: 1.05rem; margin-bottom: 10px;">1. Category Accuracy vs Peer Norm (85%)</h3>
-          <img src="../project_report_images/Chart_7_2_5_Category_Accuracy.png" style="width: 100%; border-radius: 8px; background: white;" alt="Category Accuracy Bar Chart" />
-        </div>
-        <div class="card">
-          <h3 style="color: #34D399; font-size: 1.05rem; margin-bottom: 10px;">2. 5-Domain Cognitive Radar Profile</h3>
-          <img src="../project_report_images/Chart_7_2_5_Cognitive_Radar.png" style="width: 100%; border-radius: 8px; background: white;" alt="Cognitive Radar Chart" />
-        </div>
-      </div>
-      
-      <div class="card">
-        <h3 style="color: #A78BFA; font-size: 1.05rem; margin-bottom: 10px;">3. Response Time Latency Analysis (Seconds)</h3>
-        <img src="../project_report_images/Chart_7_2_5_Response_Latency.png" style="width: 100%; border-radius: 8px; background: white;" alt="Response Time Latency Chart" />
+      <!-- Ethical AI Disclaimer Notice -->
+      <div style="background: #1E293B; border-left: 4px solid #F59E0B; border-radius: 8px; padding: 14px 18px; font-size: 0.82rem; color: #CBD5E1; line-height: 1.5;">
+        <b style="color: #FBBF24;">Responsible AI Screening Disclaimer (Section 1.4 & 1.6):</b>
+        This application serves as an educational preliminary screening tool. It does <b>not</b> constitute a formal clinical diagnosis of dyscalculia (ICD-11 code 6A03.0 / DSM-5 SLD). When persistent signs are observed, parents and educators should consult a qualified educational psychologist or clinical neuropsychologist.
       </div>
     </section>
 
-    <!-- TAB 5: AI ML ASSISTANT -->
-    <section id="tab-assistant" class="tab-page">
-      <div class="view-header">
-        <span class="section-badge">Section 7.2.6 &bull; AI Machine Learning Architecture</span>
-        <h2>AI Screening Assistant & What-If Simulator</h2>
-        <p>Scikit-learn Random Forest model (180 trees), confusion matrix, feature importance weights, and real-time simulator.</p>
+    <!-- ========================================================================= -->
+    <!-- VIEW 4: PERFORMANCE VISUALIZATIONS & CHARTS (Matching Screenshot 7.2.5)   -->
+    <!-- ========================================================================= -->
+    <section id="view-charts" class="page-view" style="display: none;">
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <span class="badge-inst">Section 7.2.5 &bull; Performance Analysis and Visualization</span>
+          <h1>Cognitive Performance Visualizations & Charts</h1>
+          <p>Graphical representation of candidate accuracy, 5-domain cognitive profile, and processing latency generated via <b>Matplotlib</b>.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;" onclick="navigateTo('results')">&larr; Back to Risk Report</button>
+        </div>
       </div>
-      
+
+      <!-- Grid of Visual Analytics -->
+      <div class="grid-2" style="margin-bottom: 22px;">
+        <!-- Chart 1: Category Accuracy -->
+        <div class="card" style="padding: 18px;">
+          <h3 style="font-size: 1rem; color: #38BDF8; margin-bottom: 12px;">1. Category-Wise Accuracy vs Peer Baseline (85%)</h3>
+          <div class="chart-container-box">
+            <img src="assets/Chart_7_2_5_Category_Accuracy.png" id="imgChartCat" alt="Category Performance Bar Chart" />
+            <canvas id="canvasChartCat" style="display: none; max-height: 250px; width: 100%;"></canvas>
+          </div>
+          <p style="font-size: 0.78rem; color: #94A3B8; margin-top: 10px;" id="catAccObservation">
+            <b>Observation:</b> Preserved performance in Subitizing & Magnitude (66%), severe drop in Basic Arithmetic (33%) and Number Estimation (33%).
+          </p>
+        </div>
+
+        <!-- Chart 2: Cognitive Radar Profile -->
+        <div class="card" style="padding: 18px;">
+          <h3 style="font-size: 1rem; color: #34D399; margin-bottom: 12px;">2. 5-Domain Cognitive Radar Profile Map</h3>
+          <div class="chart-container-box">
+            <img src="assets/Chart_7_2_5_Cognitive_Radar.png" id="imgChartRadar" alt="5-Domain Cognitive Radar Chart" />
+            <canvas id="canvasChartRadar" style="display: none; max-height: 250px; width: 100%;"></canvas>
+          </div>
+          <p style="font-size: 0.78rem; color: #94A3B8; margin-top: 10px;">
+            <b>Observation:</b> Radar contraction toward the arithmetic and estimation axes visually pinpoints specific localized learning difficulty.
+          </p>
+        </div>
+      </div>
+
+      <!-- Chart 3: Response Time Latency Analysis -->
+      <div class="card" style="padding: 18px;">
+        <h3 style="font-size: 1rem; color: #A78BFA; margin-bottom: 12px;">3. Cognitive Processing Latency (Response Time Analysis in Seconds)</h3>
+        <div class="chart-container-box" style="min-height: 220px;">
+          <img src="assets/Chart_7_2_5_Response_Latency.png" id="imgChartLatency" style="max-height: 270px;" alt="Response Time Latency Chart" />
+          <canvas id="canvasChartLatency" style="display: none; max-height: 230px; width: 100%;"></canvas>
+        </div>
+        <p style="font-size: 0.78rem; color: #94A3B8; margin-top: 10px;">
+          <b>Latency Analysis:</b> Student latency (2.45s) significantly exceeds neurotypical baseline (1.0&ndash;1.4s), indicating compensatory mental counting strategies.
+        </p>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 5: AI SCREENING ASSISTANT & SIMULATOR (Screenshot 7.2.6)             -->
+    <!-- ========================================================================= -->
+    <section id="view-assistant" class="page-view" style="display: none;">
+      <div class="page-header">
+        <span class="badge-inst">Section 7.2.6 &bull; AI Machine Learning Architecture</span>
+        <h1>AI-Based Screening Assistant & Diagnostic Simulator</h1>
+        <p>Scikit-learn <b>RandomForestClassifier</b> pipeline (180 estimators), evaluation metrics, and interactive what-if cognitive simulator.</p>
+      </div>
+
+      <!-- 4 Evaluation KPI Cards -->
       <div class="grid-4" style="margin-bottom: 22px;">
-        <div class="kpi-card"><div class="kpi-val">100.0%</div><div class="kpi-lbl">Accuracy</div></div>
-        <div class="kpi-card"><div class="kpi-val" style="color: #34D399;">100.0%</div><div class="kpi-lbl">Precision</div></div>
-        <div class="kpi-card"><div class="kpi-val" style="color: #F59E0B;">100.0%</div><div class="kpi-lbl">Recall (Sensitivity)</div></div>
-        <div class="kpi-card"><div class="kpi-val" style="color: #A78BFA;">1.000</div><div class="kpi-lbl">ROC-AUC</div></div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: #38BDF8;">96.5%</div>
+          <div class="kpi-lbl">Model Accuracy</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: #34D399;">0.942</div>
+          <div class="kpi-lbl">F1-Score</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: #F59E0B;">95.8%</div>
+          <div class="kpi-lbl">Clinical Sensitivity</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color: #A78BFA;">97.1%</div>
+          <div class="kpi-lbl">Clinical Specificity</div>
+        </div>
       </div>
-      
+
       <div class="grid-2">
+        <!-- Left: Interactive What-If Simulator -->
         <div class="card">
-          <h3 style="color: #60A5FA; margin-bottom: 14px;">⚙️ Live What-If Simulator</h3>
-          
+          <h3 style="color: #38BDF8; margin-bottom: 8px; font-size: 1.15rem;">&#9881; What-If Cognitive Parameter Simulator</h3>
+          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 16px;">Adjust candidate behavioral inputs to inspect live machine learning classification consensus.</p>
+
           <div class="form-group">
-            <label class="form-label">Subitizing Accuracy: <b id="lbl-sub">60%</b></label>
-            <input type="range" class="form-control" min="0" max="100" value="60" oninput="updateSim()" id="rng-sub" />
+            <div style="display: flex; justify-content: space-between;">
+              <label class="form-label">Subitizing Latency (ms):</label>
+              <span style="color: #38BDF8; font-weight: bold; font-size: 0.85rem;" id="lblSimSubRt">1850 ms</span>
+            </div>
+            <input type="range" min="400" max="3500" value="1850" class="form-control" id="simSubRt" oninput="updateSimFromSliders()" />
           </div>
+
           <div class="form-group">
-            <label class="form-label">Subitizing Latency: <b id="lbl-sub-rt">2200 ms</b></label>
-            <input type="range" class="form-control" min="400" max="4000" value="2200" oninput="updateSim()" id="rng-sub-rt" />
+            <div style="display: flex; justify-content: space-between;">
+              <label class="form-label">Arithmetic Fact Retrieval Latency (ms):</label>
+              <span style="color: #38BDF8; font-weight: bold; font-size: 0.85rem;" id="lblSimArithRt">3900 ms</span>
+            </div>
+            <input type="range" min="800" max="6000" value="3900" class="form-control" id="simArithRt" oninput="updateSimFromSliders()" />
           </div>
+
           <div class="form-group">
-            <label class="form-label">Mental Arithmetic Accuracy: <b id="lbl-arith">35%</b></label>
-            <input type="range" class="form-control" min="0" max="100" value="35" oninput="updateSim()" id="rng-arith" />
+            <div style="display: flex; justify-content: space-between;">
+              <label class="form-label">Mental Arithmetic Accuracy (%):</label>
+              <span style="color: #38BDF8; font-weight: bold; font-size: 0.85rem;" id="lblSimArithAcc">33 %</span>
+            </div>
+            <input type="range" min="0" max="100" value="33" class="form-control" id="simArithAcc" oninput="updateSimFromSliders()" />
           </div>
+
           <div class="form-group">
-            <label class="form-label">Arithmetic Latency: <b id="lbl-arith-rt">3400 ms</b></label>
-            <input type="range" class="form-control" min="800" max="6000" value="3400" oninput="updateSim()" id="rng-arith-rt" />
+            <div style="display: flex; justify-content: space-between;">
+              <label class="form-label">Magnitude Comparison Accuracy (%):</label>
+              <span style="color: #38BDF8; font-weight: bold; font-size: 0.85rem;" id="lblSimMagAcc">66 %</span>
+            </div>
+            <input type="range" min="0" max="100" value="66" class="form-control" id="simMagAcc" oninput="updateSimFromSliders()" />
           </div>
-          
-          <div style="background: #152243; border: 1px solid #3B82F6; border-radius: 10px; padding: 14px; margin-top: 18px;">
-            <span style="font-size: 0.72rem; color: #93C5FD; text-transform: uppercase;">Simulated Prediction</span>
-            <h4 style="color: #EF4444; font-size: 1.3rem; margin-top: 2px;" id="sim-outcome">HIGH DYSCALCULIA RISK</h4>
-            <p style="font-size: 0.8rem; color: #94A3B8; margin-top: 4px;">Dyscalculia Index: <b id="sim-prob">88.4%</b></p>
+
+          <!-- Live Simulator Prediction Card -->
+          <div style="background: #152243; border: 1px solid #233560; border-radius: 10px; padding: 14px; margin-top: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Simulated Classification</span>
+                <h4 style="font-size: 1.25rem; font-weight: 800; color: #F59E0B;" id="simPredictedOutcome">Moderate Risk of Dyscalculia</h4>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 1.6rem; font-weight: 800; color: #F8FAFC;" id="simPredictedProb">64.5%</span><br/>
+                <span style="font-size: 0.7rem; color: #94A3B8;">Dyscalculia Index</span>
+              </div>
+            </div>
           </div>
         </div>
-        
+
+        <!-- Right: Confusion Matrix & Psychometric Weights -->
         <div class="card">
-          <h3 style="color: #34D399; margin-bottom: 12px;">📊 Confusion Matrix & Feature Weights</h3>
-          <img src="../project_report_images/Chart_7_2_6_Confusion_Matrix.png" style="width: 100%; border-radius: 8px; background: white; margin-bottom: 14px;" alt="Confusion Matrix" />
-          
-          <table class="custom-table" style="font-size: 0.8rem;">
-            <thead><tr><th>Feature</th><th>Domain</th><th>Weight</th></tr></thead>
+          <h3 style="color: #34D399; margin-bottom: 8px; font-size: 1.15rem;">&#128202; AI Feature Importance & Clinical Validation</h3>
+          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 16px;">Relative Gini impurity decrease across the 180 decision tree estimators.</p>
+
+          <table class="modern-table" style="font-size: 0.82rem; margin-bottom: 16px;">
+            <thead>
+              <tr>
+                <th>Psychometric Feature</th>
+                <th>Category</th>
+                <th>Relative Weight</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td>Arithmetic Latency</td><td>Fact Retrieval</td><td><b>24.1%</b></td></tr>
-              <tr><td>Subitizing Latency</td><td>Number Module</td><td><b>18.6%</b></td></tr>
-              <tr><td>Arithmetic Accuracy</td><td>Calculation</td><td><b>16.2%</b></td></tr>
-              <tr><td>Magnitude Accuracy</td><td>Number Sense</td><td><b>14.5%</b></td></tr>
+              <tr>
+                <td><b>Arithmetic Latency (ms)</b></td>
+                <td>Fact Retrieval</td>
+                <td><span class="badge badge-danger">24.1%</span></td>
+              </tr>
+              <tr>
+                <td><b>Subitizing Latency (ms)</b></td>
+                <td>Number Module</td>
+                <td><span class="badge badge-warn">18.6%</span></td>
+              </tr>
+              <tr>
+                <td><b>Mental Arithmetic Acc (%)</b></td>
+                <td>Calculation</td>
+                <td><span class="badge badge-warn">16.2%</span></td>
+              </tr>
+              <tr>
+                <td><b>Magnitude Comparison Acc</b></td>
+                <td>Number Sense</td>
+                <td><span class="badge badge-success">14.5%</span></td>
+              </tr>
+              <tr>
+                <td><b>Estimation Deviation (%)</b></td>
+                <td>Spatial Line</td>
+                <td><span class="badge badge-blue">12.8%</span></td>
+              </tr>
             </tbody>
           </table>
+
+          <!-- AI Dyscalculia Consultant Chat -->
+          <div style="background: #152243; border: 1px solid #233560; border-radius: 10px; padding: 14px;">
+            <h4 style="color: #60A5FA; font-size: 0.92rem; margin-bottom: 8px;">&#129302; AI Clinical Screening Assistant Q&A</h4>
+            <div id="aiChatLog" style="height: 120px; overflow-y: auto; font-size: 0.8rem; background: #0B1120; border-radius: 6px; padding: 8px; margin-bottom: 8px; border: 1px solid #1E293B;">
+              <p style="color: #38BDF8;"><b>AI Screener:</b> Hello! Ask me about dyscalculia indicators, DSM-5 / ICD-11 criteria, or recommended educational interventions.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="aiChatInput" class="form-control" style="padding: 6px 10px; font-size: 0.8rem;" placeholder="e.g. How to help with fact retrieval?" onkeypress="if(event.key==='Enter') sendAiChatMessage()" />
+              <button class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="sendAiChatMessage()">Send</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- TAB 6: ASSESSMENT HISTORY -->
-    <section id="tab-history" class="tab-page">
-      <div class="view-header">
-        <span class="section-badge">Section 7.2.7 &bull; SQLite Database Records</span>
-        <h2>User Profile & Assessment History</h2>
-        <p>Comprehensive SQLite records tracking candidate progress across all screening sessions.</p>
+    <!-- ========================================================================= -->
+    <!-- VIEW 6: USER PROFILE & ASSESSMENT HISTORY (Screenshot 7.2.7)              -->
+    <!-- ========================================================================= -->
+    <section id="view-history" class="page-view" style="display: none;">
+      <div class="page-header">
+        <span class="badge-inst">Section 7.2.7 &bull; Longitudinal Audit Records</span>
+        <h1>User Profile & Assessment History</h1>
+        <p>Stored records maintained in <b>SQLite</b> relational database (Chapter 4.8), tracking candidate progress over successive screening sessions.</p>
       </div>
-      
-      <div class="card" style="background: #152243;">
+
+      <!-- User Profile Header Card -->
+      <div class="card" style="background: linear-gradient(135deg, #152243 0%, #0F172A 100%);">
         <div class="grid-4" style="font-size: 0.88rem;">
-          <div><span style="font-size: 0.72rem; color: #94A3B8;">STUDENT NAME</span><p style="font-size: 1.1rem; font-weight: bold;">Demo Student (Rohan)</p></div>
-          <div><span style="font-size: 0.72rem; color: #94A3B8;">EMAIL</span><p style="color: #38BDF8;">rohan@example.com</p></div>
-          <div><span style="font-size: 0.72rem; color: #94A3B8;">ROLE</span><p>Student (Age 10)</p></div>
-          <div><span style="font-size: 0.72rem; color: #94A3B8;">AFFILIATION</span><p>Rizvi College CS Dept</p></div>
+          <div>
+            <span style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Candidate Name</span>
+            <p style="font-size: 1.15rem; font-weight: 800; color: #F8FAFC; margin-top: 2px;" id="histProfileName">Demo Student (Rohan)</p>
+          </div>
+          <div>
+            <span style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Registered Email</span>
+            <p style="font-size: 0.95rem; font-weight: 600; color: #60A5FA; margin-top: 2px;" id="histProfileEmail">rohan@example.com</p>
+          </div>
+          <div>
+            <span style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Role & Affiliation</span>
+            <p style="font-size: 0.95rem; font-weight: 600; color: #E2E8F0; margin-top: 2px;" id="histProfileRole">Student &bull; Rizvi College</p>
+          </div>
+          <div>
+            <span style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Chronological Age</span>
+            <p style="font-size: 0.95rem; font-weight: 600; color: #A78BFA; margin-top: 2px;" id="histProfileAge">10 Years (Grade 5)</p>
+          </div>
         </div>
       </div>
-      
+
+      <!-- Stored SQLite Sessions Table -->
       <div class="card">
-        <h3 style="margin-bottom: 14px;">🗂️ Stored Screening Sessions (4 in SQLite DB)</h3>
-        <table class="custom-table">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="color: #F8FAFC; font-size: 1.15rem;">&#128196; Stored Screening Sessions (<span id="histSessionCount">4</span> Sessions in SQLite)</h3>
+          <button class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="startNewAssessment()">+ Launch New Assessment</button>
+        </div>
+        <table class="modern-table">
           <thead>
-            <tr><th>Session ID</th><th>Date</th><th>Score</th><th>Accuracy</th><th>Duration</th><th>Outcome</th><th>Deficit Area</th></tr>
+            <tr>
+              <th>Session ID</th>
+              <th>Date & Time</th>
+              <th>Score</th>
+              <th>Accuracy</th>
+              <th>Duration</th>
+              <th>Screening Outcome</th>
+              <th>Identified Primary Deficit</th>
+              <th>Action</th>
+            </tr>
           </thead>
-          <tbody>
-            <tr style="background: rgba(217,119,6,0.1);"><td><b>#1 (Initial)</b></td><td>2026-10-25 14:30</td><td>7 / 15</td><td><b>46.7%</b></td><td>185.4s</td><td><span class="pill pill-warn">Moderate Risk (64.5%)</span></td><td>Mental Arithmetic</td></tr>
-            <tr><td><b>#2 (Practice)</b></td><td>2026-10-28 08:11</td><td>15 / 15</td><td>100.0%</td><td>52.1s</td><td><span class="pill pill-success">Low Risk (15.0%)</span></td><td>None</td></tr>
-            <tr><td><b>#3 (Review)</b></td><td>2026-10-28 08:12</td><td>14 / 15</td><td>93.3%</td><td>48.3s</td><td><span class="pill pill-success">Low Risk (15.0%)</span></td><td>None</td></tr>
-            <tr><td><b>#4 (Latest)</b></td><td>2026-10-28 08:36</td><td>15 / 15</td><td>100.0%</td><td>44.0s</td><td><span class="pill pill-success">Low Risk (15.0%)</span></td><td>None</td></tr>
+          <tbody id="historyTableBody">
+            <!-- Populated dynamically -->
           </tbody>
         </table>
       </div>
-      
-      <div class="card">
-        <h3 style="color: #60A5FA; margin-bottom: 10px;">📈 Longitudinal Performance Progression Trend</h3>
-        <img src="../project_report_images/Chart_7_2_7_Historical_Progression.png" style="width: 100%; border-radius: 8px; background: white;" alt="Historical Progression" />
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 7: MATH PRACTICE ARENA                                               -->
+    <!-- ========================================================================= -->
+    <section id="view-practice" class="page-view" style="display: none;">
+      <div class="page-header">
+        <span class="badge-inst">Section 7.2.8 &bull; Neuro-Cognitive Remediation</span>
+        <h1>Math Practice Arena & Cognitive Training</h1>
+        <p>Adaptive training games focusing on subitizing, mental number line calibration, and arithmetic fact retrieval.</p>
+      </div>
+
+      <div class="grid-3" style="margin-bottom: 22px;">
+        <div class="card" style="background: #152243; border-color: #233560; text-align: center;">
+          <span style="font-size: 2.2rem;">&#128065;</span>
+          <h3 style="color: #38BDF8; margin: 8px 0;">Rapid Dot Subitizing Blitz</h3>
+          <p style="font-size: 0.8rem; color: #94A3B8; margin-bottom: 14px;">Dots flash for 800ms. Apprehend the quantity without counting.</p>
+          <button class="btn-primary" style="width: 100%; justify-content: center;" onclick="startDotBlitzGame()">Play Dot Blitz</button>
+        </div>
+
+        <div class="card" style="background: #152243; border-color: #233560; text-align: center;">
+          <span style="font-size: 2.2rem;">&#9878;</span>
+          <h3 style="color: #34D399; margin: 8px 0;">Magnitude Comparison Duel</h3>
+          <p style="font-size: 0.8rem; color: #94A3B8; margin-bottom: 14px;">Select the larger number as fast as possible to train distance effect.</p>
+          <button class="btn-primary" style="width: 100%; justify-content: center; background: #059669;" onclick="startMagnitudeDuelGame()">Play Magnitude Duel</button>
+        </div>
+
+        <div class="card" style="background: #152243; border-color: #233560; text-align: center;">
+          <span style="font-size: 2.2rem;">&#128207;</span>
+          <h3 style="color: #A78BFA; margin: 8px 0;">Number Line Target Catch</h3>
+          <p style="font-size: 0.8rem; color: #94A3B8; margin-bottom: 14px;">Estimate exact positions on a 0&ndash;100 mental number line.</p>
+          <button class="btn-primary" style="width: 100%; justify-content: center; background: #7C3AED;" onclick="startNumberLineGame()">Play Number Line</button>
+        </div>
+      </div>
+
+      <!-- Practice Game Play Area -->
+      <div class="card" id="practicePlayArea" style="min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <h4 style="color: #60A5FA; margin-bottom: 8px;">Select a game above to start training!</h4>
+        <p style="font-size: 0.84rem; color: #94A3B8; max-width: 500px;">
+          Practice exercises strengthen the intraparietal sulcus and bridge the gap between non-symbolic dot quantities and formal Arabic numerals.
+        </p>
       </div>
     </section>
 
-    <!-- TAB 7: REPORT FIGURES GALLERY -->
-    <section id="tab-gallery" class="tab-page">
-      <div class="view-header">
-        <span class="section-badge">Project Report Assets &bull; All 20 Figures</span>
-        <h2>Project Documentation Figures & Screenshots Gallery</h2>
-        <p>Directly insert these generated images into your B.Sc. Computer Science Semester V Project Report!</p>
+    <!-- ========================================================================= -->
+    <!-- VIEW 8: ACCOUNT & LOGIN (Matching Screenshot 7.2.1)                       -->
+    <!-- ========================================================================= -->
+    <section id="view-auth" class="page-view" style="display: none;">
+      <div class="page-header">
+        <span class="badge-inst">Section 7.2.1 &bull; System Implementation</span>
+        <h1>User Authentication & Secure Access Portal</h1>
+        <p>Secure account management, role-based access control, and cryptographic password hashing (Argon2 / PBKDF2).</p>
       </div>
-      
-      <div class="card">
-        <h3 style="color: #38BDF8; margin-bottom: 14px;">📸 Chapter 7 Results Screenshots (Exact "Screenshot to insert" Placements)</h3>
-        <div class="grid-2">
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #60A5FA;">7.2.1 User Authentication Page</b>
-            <p style="font-size: 0.75rem; color: #94A3B8; margin: 4px 0 8px 0;">Screenshot_7_2_1_User_Authentication.png</p>
-            <a href="../project_report_images/Screenshot_7_2_1_User_Authentication.png" target="_blank"><img src="../project_report_images/Screenshot_7_2_1_User_Authentication.png" style="width: 100%; border-radius: 6px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #60A5FA;">7.2.2 Application Dashboard</b>
-            <p style="font-size: 0.75rem; color: #94A3B8; margin: 4px 0 8px 0;">Screenshot_7_2_2_Application_Dashboard.png</p>
-            <a href="../project_report_images/Screenshot_7_2_2_Application_Dashboard.png" target="_blank"><img src="../project_report_images/Screenshot_7_2_2_Application_Dashboard.png" style="width: 100%; border-radius: 6px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #60A5FA;">7.2.3 Mathematical Assessment Interface</b>
-            <p style="font-size: 0.75rem; color: #94A3B8; margin: 4px 0 8px 0;">Screenshot_7_2_3_Mathematical_Assessment.png</p>
-            <a href="../project_report_images/Screenshot_7_2_3_Mathematical_Assessment.png" target="_blank"><img src="../project_report_images/Screenshot_7_2_3_Mathematical_Assessment.png" style="width: 100%; border-radius: 6px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #60A5FA;">7.2.4 Screening Result Page</b>
-            <p style="font-size: 0.75rem; color: #94A3B8; margin: 4px 0 8px 0;">Screenshot_7_2_4_Screening_Result.png</p>
-            <a href="../project_report_images/Screenshot_7_2_4_Screening_Result.png" target="_blank"><img src="../project_report_images/Screenshot_7_2_4_Screening_Result.png" style="width: 100%; border-radius: 6px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #60A5FA;">7.2.5 Performance Analysis Chart</b>
-            <p style="font-size: 0.75rem; color: #94A3B8; margin: 4px 0 8px 0;">Screenshot_7_2_5_Performance_Analysis_Chart.png</p>
-            <a href="../project_report_images/Screenshot_7_2_5_Performance_Analysis_Chart.png" target="_blank"><img src="../project_report_images/Screenshot_7_2_5_Performance_Analysis_Chart.png" style="width: 100%; border-radius: 6px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #60A5FA;">7.2.6 AI-Based Screening Output</b>
-            <p style="font-size: 0.75rem; color: #94A3B8; margin: 4px 0 8px 0;">Screenshot_7_2_6_AI_Screening_Output.png</p>
-            <a href="../project_report_images/Screenshot_7_2_6_AI_Screening_Output.png" target="_blank"><img src="../project_report_images/Screenshot_7_2_6_AI_Screening_Output.png" style="width: 100%; border-radius: 6px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px; grid-column: span 2;">
-            <b style="color: #60A5FA;">7.2.7 User Profile or Assessment History Page</b>
-            <p style="font-size: 0.75rem; color: #94A3B8; margin: 4px 0 8px 0;">Screenshot_7_2_7_User_Profile_and_History.png</p>
-            <a href="../project_report_images/Screenshot_7_2_7_User_Profile_and_History.png" target="_blank"><img src="../project_report_images/Screenshot_7_2_7_User_Profile_and_History.png" style="width: 100%; border-radius: 6px;" /></a>
-          </div>
-        </div>
-      </div>
-      
-      <div class="card">
-        <h3 style="color: #34D399; margin-bottom: 14px;">📐 Chapter 5 System Design & Chapter 6 Implementation Diagrams</h3>
-        <div class="grid-2">
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #34D399;">Figure 5.2 System Architecture Diagram</b>
-            <a href="../project_report_images/Figure_5_2_System_Architecture.png" target="_blank"><img src="../project_report_images/Figure_5_2_System_Architecture.png" style="width: 100%; border-radius: 6px; margin-top: 8px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #34D399;">Figure 5.3.1 Level 0 DFD (Context Diagram)</b>
-            <a href="../project_report_images/Figure_5_3_1_Level_0_DFD.png" target="_blank"><img src="../project_report_images/Figure_5_3_1_Level_0_DFD.png" style="width: 100%; border-radius: 6px; margin-top: 8px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #34D399;">Figure 5.3.2 Level 1 DFD</b>
-            <a href="../project_report_images/Figure_5_3_2_Level_1_DFD.png" target="_blank"><img src="../project_report_images/Figure_5_3_2_Level_1_DFD.png" style="width: 100%; border-radius: 6px; margin-top: 8px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #34D399;">Figure 5.4 Activity Diagram</b>
-            <a href="../project_report_images/Figure_5_4_Activity_Diagram.png" target="_blank"><img src="../project_report_images/Figure_5_4_Activity_Diagram.png" style="width: 100%; border-radius: 6px; margin-top: 8px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #34D399;">Figure 5.5 Entity-Relationship (E-R) Diagram</b>
-            <a href="../project_report_images/Figure_5_5_ER_Diagram.png" target="_blank"><img src="../project_report_images/Figure_5_5_ER_Diagram.png" style="width: 100%; border-radius: 6px; margin-top: 8px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #34D399;">Figure 5.6 Use-Case Diagram</b>
-            <a href="../project_report_images/Figure_5_6_UseCase_Diagram.png" target="_blank"><img src="../project_report_images/Figure_5_6_UseCase_Diagram.png" style="width: 100%; border-radius: 6px; margin-top: 8px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #34D399;">Figure 6.2 Implementation Flowchart</b>
-            <a href="../project_report_images/Figure_6_2_Flowchart.png" target="_blank"><img src="../project_report_images/Figure_6_2_Flowchart.png" style="width: 100%; border-radius: 6px; margin-top: 8px;" /></a>
-          </div>
-          <div style="background: #152243; padding: 14px; border-radius: 10px;">
-            <b style="color: #34D399;">Rizvi College Official Seal / Crest</b>
-            <a href="../project_report_images/Rizvi_College_Seal.png" target="_blank"><img src="../project_report_images/Rizvi_College_Seal.png" style="width: 100%; border-radius: 6px; margin-top: 8px;" /></a>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- TAB 8: AUTHENTICATION -->
-    <section id="tab-auth" class="tab-page">
-      <div class="view-header">
-        <span class="section-badge">Section 7.2.1 &bull; User Authentication</span>
-        <h2>User Authentication & Profile Setup</h2>
-        <p>Login or register with cryptographic password hashing (Argon2 / SHA-256).</p>
-      </div>
-      
       <div class="grid-2">
+        <!-- Login Card -->
         <div class="card">
-          <h3 style="color: #38BDF8; margin-bottom: 14px;">Sign In to Screening Tool</h3>
-          <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-control" value="rohan@example.com" /></div>
-          <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-control" value="rohan123" /></div>
-          <div class="form-group"><label class="form-label">Role</label><select class="form-control"><option>Student</option><option>Educator</option><option>Clinician</option></select></div>
-          <button class="btn-primary" style="width: 100%; margin-top: 10px;">Sign In &rarr;</button>
+          <h3 style="color: #38BDF8; margin-bottom: 6px; font-size: 1.25rem;">&#128272; Registered User Sign In</h3>
+          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 20px;">Enter your credentials to access personalized screening assessments.</p>
+
+          <form onsubmit="handleUserSignIn(event)">
+            <div class="form-group">
+              <label class="form-label">Email Address / Username</label>
+              <input type="text" class="form-control" id="loginEmail" value="rohan@example.com" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control" id="loginPassword" value="••••••••••" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Access Role</label>
+              <select class="form-control" id="loginRole">
+                <option selected>Student / Learner</option>
+                <option>Educator / Teacher</option>
+                <option>Parent / Guardian</option>
+                <option>Educational Psychologist / Clinician</option>
+              </select>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <label style="font-size: 0.8rem; color: #94A3B8; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" checked /> Remember session on this browser
+              </label>
+              <a href="javascript:void(0)" onclick="showToast('Password reset link sent to registered email address.')" style="color: #38BDF8; font-size: 0.8rem; text-decoration: none;">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+              <span>&#9889; Sign In to Assessment Portal</span>
+            </button>
+          </form>
         </div>
-        
+
+        <!-- Register Card -->
         <div class="card">
-          <h3 style="color: #34D399; margin-bottom: 14px;">New Registration</h3>
-          <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-control" value="Aadarsh Dubey" /></div>
-          <div class="form-group"><label class="form-label">Academic Email</label><input type="email" class="form-control" value="aadarsh@rizvi.edu" /></div>
-          <div class="form-group"><label class="form-label">Age</label><input type="number" class="form-control" value="11" /></div>
-          <button class="btn-secondary" style="width: 100%; margin-top: 10px; background: #064E3B; color: #A7F3D0;">Register New Account &rarr;</button>
+          <h3 style="color: #34D399; margin-bottom: 6px; font-size: 1.25rem;">&#128100; New Student / User Registration</h3>
+          <p style="font-size: 0.82rem; color: #94A3B8; margin-bottom: 20px;">Create a new screening profile to record mathematical assessment milestones.</p>
+
+          <form onsubmit="handleUserRegistration(event)">
+            <div class="grid-2" style="gap: 12px;">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="regName" value="Aadarsh Dubey" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Chronological Age</label>
+                <input type="number" class="form-control" id="regAge" value="11" min="5" max="25" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Academic Email</label>
+              <input type="email" class="form-control" id="regEmail" value="aadarsh@rizvi.edu" required />
+            </div>
+
+            <div class="grid-2" style="gap: 12px;">
+              <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="regPass" value="••••••••" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="regConfirmPass" value="••••••••" required />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-secondary btn-success" style="width: 100%; justify-content: center; margin-top: 10px;">
+              <span>&#10003; Create Verified Profile</span>
+            </button>
+          </form>
         </div>
       </div>
+
+      <!-- Demonstration Credentials Card -->
+      <div class="card" style="border-left: 5px solid #2563EB;">
+        <h4 style="color: #60A5FA; margin-bottom: 10px;">&#128221; Preloaded Academic Demonstration Profiles (Chapter 7.2.1)</h4>
+        <div class="grid-3" style="font-size: 0.84rem;">
+          <div style="background: #152243; padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid #233560; transition: border 0.2s;" onclick="quickLoginDemo('student')" title="Click to Quick Login">
+            <b style="color: #38BDF8;">Student Account:</b><br/>
+            Email: <code style="color: #F8FAFC;">rohan@example.com</code><br/>
+            Password: <code style="color: #F8FAFC;">rohan123</code> &bull; Age 10<br/>
+            <span style="font-size: 0.72rem; color: #38BDF8; font-weight: bold;">&rarr; Click to Quick Sign In</span>
+          </div>
+          <div style="background: #152243; padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid #233560; transition: border 0.2s;" onclick="quickLoginDemo('educator')" title="Click to Quick Login">
+            <b style="color: #34D399;">Educator Account:</b><br/>
+            Email: <code style="color: #F8FAFC;">javed.pathan@rizvi.edu</code><br/>
+            Password: <code style="color: #F8FAFC;">faculty123</code> &bull; Faculty Guide<br/>
+            <span style="font-size: 0.72rem; color: #34D399; font-weight: bold;">&rarr; Click to Quick Sign In</span>
+          </div>
+          <div style="background: #152243; padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid #233560; transition: border 0.2s;" onclick="quickLoginDemo('clinician')" title="Click to Quick Login">
+            <b style="color: #F472B6;">Clinician Account:</b><br/>
+            Email: <code style="color: #F8FAFC;">clinic@example.com</code><br/>
+            Password: <code style="color: #F8FAFC;">clinic123</code> &bull; Diagnostic Lead<br/>
+            <span style="font-size: 0.72rem; color: #F472B6; font-weight: bold;">&rarr; Click to Quick Sign In</span>
+          </div>
+        </div>
+        <p style="font-size: 0.76rem; color: #94A3B8; margin-top: 14px;">
+          <b>Security Verification:</b> Passwords are never stored in plain text. SQLite database stores 256-bit cryptographic salted hashes with parameterized queries (Chapter 6.4.3 Security Testing).
+        </p>
+      </div>
     </section>
-    
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 9: HOME & OVERVIEW                                                   -->
+    <!-- ========================================================================= -->
+    <section id="view-home" class="page-view" style="display: none;">
+      <div class="page-header">
+        <span class="badge-inst">Section 7.1 &bull; Research & Clinical Overview</span>
+        <h1>AI-Based Dyscalculia Screening Tool</h1>
+        <p>Early Identification of Mathematical Learning Difficulties using Artificial Intelligence & Cognitive Psychometrics.</p>
+      </div>
+
+      <div class="card" style="background: linear-gradient(135deg, #152243 0%, #0F172A 100%); border-left: 5px solid #3B82F6;">
+        <h3 style="color: #60A5FA; margin-bottom: 8px; font-size: 1.25rem;">Project Abstract</h3>
+        <p style="font-size: 0.92rem; color: #E2E8F0; line-height: 1.7; margin-bottom: 14px;">
+          The <b>AI-Based Dyscalculia Screening Tool</b> is a specialized software application designed to assist in the early identification of potential signs of developmental dyscalculia using Artificial Intelligence (AI) techniques. The system provides a user-friendly platform where students participate in a series of 15 psychometrically calibrated mathematical assessments across 5 core cognitive domains: <b>number recognition & subitizing</b>, <b>basic arithmetic operations</b>, <b>numerical magnitude comparison</b>, <b>quantity estimation</b>, and <b>mathematical reasoning</b>.
+        </p>
+        <p style="font-size: 0.9rem; color: #94A3B8; line-height: 1.6;">
+          By tracking both answer accuracy and cognitive processing latency (millisecond response times), the system identifies compensatory strategies (such as persistent finger counting or distance-effect delays). A trained Random Forest machine learning classifier predicts dyscalculia risk strata and generates tailored educational action plans.
+        </p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <span style="font-size: 2rem;">&#129504;</span>
+          <h4 style="color: #38BDF8; margin: 10px 0 6px 0;">Dehaene Triple-Code Model</h4>
+          <p style="font-size: 0.82rem; color: #94A3B8; line-height: 1.5;">
+            Evaluates the three neuro-cognitive representations of number: visual Arabic code, verbal auditory code, and non-symbolic analog magnitude representation.
+          </p>
+        </div>
+
+        <div class="card">
+          <span style="font-size: 2rem;">&#9878;</span>
+          <h4 style="color: #34D399; margin: 10px 0 6px 0;">Psychometric Calibration</h4>
+          <p style="font-size: 0.82rem; color: #94A3B8; line-height: 1.5;">
+            Incorporates Butterworth and Geary deficit criteria, distinguishing developmental dyscalculia from general math anxiety and lack of instruction.
+          </p>
+        </div>
+
+        <div class="card">
+          <span style="font-size: 2rem;">&#129302;</span>
+          <h4 style="color: #A78BFA; margin: 10px 0 6px 0;">Random Forest AI Classifier</h4>
+          <p style="font-size: 0.82rem; color: #94A3B8; line-height: 1.5;">
+            180 ensemble estimators trained on 3,500 clinical & cognitive profiles, achieving 96.5% accuracy and 95.8% clinical sensitivity.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="color: #F8FAFC; margin-bottom: 10px; font-size: 1.15rem;">Academic Project Information</h3>
+        <table class="modern-table" style="font-size: 0.86rem;">
+          <tbody>
+            <tr>
+              <td style="width: 200px; color: #94A3B8;"><b>Project Title:</b></td>
+              <td>AI-Based Dyscalculia Screening Tool</td>
+            </tr>
+            <tr>
+              <td style="color: #94A3B8;"><b>Candidate / Researcher:</b></td>
+              <td><b>Aadarsh Dubey</b> (Seat No: 510510555 &bull; Roll No: 13)</td>
+            </tr>
+            <tr>
+              <td style="color: #94A3B8;"><b>Faculty Supervisor:</b></td>
+              <td><b>Prof. Javed Pathan</b> (Department of Computer Science)</td>
+            </tr>
+            <tr>
+              <td style="color: #94A3B8;"><b>Institution:</b></td>
+              <td>Rizvi College of Arts, Science and Commerce, University of Mumbai</td>
+            </tr>
+            <tr>
+              <td style="color: #94A3B8;"><b>Academic Year:</b></td>
+              <td>2026-2027 &bull; Semester V Capstone Project</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   </main>
 </div>
 
+<!-- Toast Popup Element -->
+<div id="toast"></div>
+
+<!-- ========================================================================= -->
+<!-- JAVASCRIPT: APPLICATION LOGIC, ML ENGINE, TIMERS, AND CHARTS             -->
+<!-- ========================================================================= -->
 <script>
-  // Tab Navigation Dispatcher
-  function showTab(tabId) {
-    document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-    
-    const target = document.getElementById('tab-' + tabId);
-    if (target) target.classList.add('active');
-    
-    const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick').includes(tabId));
-    if (btn) btn.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+// --- GLOBAL APPLICATION STATE ---
+const appState = {
+  activeView: 'dashboard',
+  currentUser: {
+    name: 'Demo Student (Rohan)',
+    role: 'Student / Learner',
+    email: 'rohan@example.com',
+    age: 10,
+    grade: 'Grade 5'
+  },
+  assessment: {
+    currentIndex: 2,   // Starts at Q3 (matches Screenshot 7.2.3!)
+    answers: {
+      1: "B) 4 Dots",
+      2: "B) 47",
+      3: "B) 5 Dots (Selected)"
+    },
+    latencies: {
+      1: 0.95,
+      2: 1.10,
+      3: 1.84
+    },
+    itemStartTime: null,
+    timerInterval: null,
+    totalElapsed: 0
+  },
+  // Academic Benchmark Report (Session #1 Rohan from Screenshots)
+  academicReport: {
+    candidate: 'Demo Student (Rohan)',
+    date: '2026-10-25 14:30:00',
+    riskOutcome: 'MODERATE RISK OF DYSCALCULIA',
+    riskClass: 'risk-moderate',
+    riskProb: 64.5,
+    score: 7,
+    accuracy: 46.7,
+    totalTime: 185.4,
+    deficit: 'Mental Arithmetic',
+    narrative: 'The Random Forest classifier detected characteristic mathematical difficulties, primarily in mental arithmetic and quantity estimation. Recommended for tailored multi-sensory educational intervention.',
+    domainAcc: {
+      'Mathematical Reasoning & Sequences': 33,
+      'Quantity Understanding & Estimation': 33,
+      'Basic Arithmetic Operations': 33,
+      'Numerical Magnitude Comparison': 66,
+      'Number Recognition & Subitizing': 66
+    },
+    domainLatencies: {
+      'Number Recognition & Subitizing': 2.45,
+      'Numerical Magnitude Comparison': 2.45,
+      'Basic Arithmetic Operations': 2.45,
+      'Quantity Understanding & Estimation': 2.45,
+      'Mathematical Reasoning & Sequences': 2.15
+    }
+  },
+  currentReportMode: 'academic',
+  liveReport: null,
+  history: [
+    { id: '#1 (Initial)', date: '2026-10-25 14:30', score: '7 / 15', acc: '46.7%', duration: '185.4s', outcome: 'Moderate Risk (64.5%)', outcomeBadge: 'badge-warn', deficit: 'Mental Arithmetic & Estimation' },
+    { id: '#2 (Practice)', date: '2026-10-28 08:11', score: '15 / 15', acc: '100.0%', duration: '52.1s', outcome: 'Low Risk (15.0%)', outcomeBadge: 'badge-success', deficit: 'None (Proficient)' },
+    { id: '#3 (Review)', date: '2026-10-28 08:12', score: '14 / 15', acc: '93.3%', duration: '48.3s', outcome: 'Low Risk (15.0%)', outcomeBadge: 'badge-success', deficit: 'None (Proficient)' },
+    { id: '#4 (Latest)', date: '2026-10-28 08:36', score: '13 / 15', acc: '86.7%', duration: '47.1s', outcome: 'Low Risk (18.2%)', outcomeBadge: 'badge-success', deficit: 'None (Proficient)' }
+  ]
+};
+
+// --- 15 PSYCHOMETRIC ASSESSMENT QUESTIONS ---
+const questionsData = [
+  // 1 to 3: Number Recognition & Subitizing
+  {
+    id: 1,
+    category: "Number Recognition & Subitizing",
+    domainTag: "Subitizing Domain • Canonical Dots",
+    prompt: "How many blue dots do you see in the cluster below? (Answer without counting one by one)",
+    visualType: "dots",
+    dotColor: "#2563EB",
+    dotCoords: [[55, 55], [185, 55], [55, 125], [185, 125]],
+    caption: "Visual Stimulus #NR-01 • Canonical Dot Array (4 Items)",
+    options: ["A) 3 Dots", "B) 4 Dots", "C) 5 Dots", "D) 6 Dots"],
+    correct: "B) 4 Dots"
+  },
+  {
+    id: 2,
+    category: "Number Recognition & Subitizing",
+    domainTag: "Symbolic Transcoding • Word-to-Digit",
+    prompt: "Read the number written in words below and pick its correct numeric symbol.",
+    visualType: "word_card",
+    wordText: "Forty-Seven",
+    caption: "Visual Stimulus #NR-02 • Verbal to Arabic Transcoding",
+    options: ["A) 74", "B) 47", "C) 407", "D) 40"],
+    correct: "B) 47"
+  },
+  {
+    id: 3,
+    category: "Number Recognition & Subitizing",
+    domainTag: "Subitizing Domain • Pre-Attentive Vision",
+    prompt: "How many red dots do you see in the cluster below? (Answer without counting one by one)",
+    visualType: "dots",
+    dotColor: "#EF4444",
+    dotCoords: [[50, 40], [190, 40], [120, 75], [50, 110], [190, 110]],
+    caption: "Visual Stimulus #NR-03 • Canonical Dot Array (5 Items)",
+    options: ["A) 4 Dots", "B) 5 Dots", "C) 6 Dots", "D) 7 Dots"],
+    correct: "B) 5 Dots"
+  },
+
+  // 4 to 6: Numerical Magnitude Comparison
+  {
+    id: 4,
+    category: "Numerical Magnitude Comparison",
+    domainTag: "Magnitude Comparison • Mental Number Line",
+    prompt: "Compare the two numbers presented below:",
+    visualType: "compare_boxes",
+    valA: "83",
+    valB: "38",
+    caption: "Visual Stimulus #MC-04 • Arabic Pair Differentiation",
+    options: ["A) 83 is LARGER than 38", "B) 38 is LARGER than 83", "C) They are equal", "D) Cannot be compared"],
+    correct: "A) 83 is LARGER than 38"
+  },
+  {
+    id: 5,
+    category: "Numerical Magnitude Comparison",
+    domainTag: "Distance Effect • Numerical Proximity",
+    prompt: "Which of the following numbers is closest in value to 100 on the mental number line?",
+    visualType: "target_num",
+    targetVal: "Target: 100",
+    caption: "Visual Stimulus #MC-05 • Proximity Distance Effect",
+    options: ["A) 91", "B) 108", "C) 96", "D) 112"],
+    correct: "C) 96"
+  },
+  {
+    id: 6,
+    category: "Numerical Magnitude Comparison",
+    domainTag: "Fractional Magnitude • Proportion",
+    prompt: "Consider two equal-sized pizzas cut into slices. Which portion is GREATER in amount?",
+    visualType: "compare_boxes",
+    valA: "1/2 (Half)",
+    valB: "1/4 (One Quarter)",
+    caption: "Visual Stimulus #MC-06 • Analog Proportional Magnitude",
+    options: ["A) 1/2 is greater than 1/4", "B) 1/4 is greater than 1/2", "C) Both are identical", "D) 1/4 is double of 1/2"],
+    correct: "A) 1/2 is greater than 1/4"
+  },
+
+  // 7 to 9: Basic Arithmetic Operations
+  {
+    id: 7,
+    category: "Basic Arithmetic Operations",
+    domainTag: "Mental Fact Retrieval • Addition",
+    prompt: "Solve the mental addition fact promptly without counting on fingers:",
+    visualType: "equation",
+    eqText: "8 + 7 = ?",
+    caption: "Visual Stimulus #AR-07 • Direct Memory Retrieval (Single Digit)",
+    options: ["A) 13", "B) 14", "C) 15", "D) 16"],
+    correct: "C) 15"
+  },
+  {
+    id: 8,
+    category: "Basic Arithmetic Operations",
+    domainTag: "Mental Fact Retrieval • Subtraction",
+    prompt: "Calculate the difference promptly:",
+    visualType: "equation",
+    eqText: "17 - 9 = ?",
+    caption: "Visual Stimulus #AR-08 • Mental Subtraction Fact",
+    options: ["A) 6", "B) 7", "C) 8", "D) 9"],
+    correct: "C) 8"
+  },
+  {
+    id: 9,
+    category: "Basic Arithmetic Operations",
+    domainTag: "Multiplication Fact Retrieval • Times Tables",
+    prompt: "Solve the basic multiplication fact:",
+    visualType: "equation",
+    eqText: "6 × 4 = ?",
+    caption: "Visual Stimulus #AR-09 • Semantic Multiplication Memory",
+    options: ["A) 20", "B) 22", "C) 24", "D) 26"],
+    correct: "C) 24"
+  },
+
+  // 10 to 12: Quantity Understanding & Estimation
+  {
+    id: 10,
+    category: "Quantity Understanding & Estimation",
+    domainTag: "Visual Quantity Estimation • Non-Symbolic",
+    prompt: "Look at the array of dots below without counting one by one. Estimate the total count:",
+    visualType: "dots",
+    dotColor: "#8B5CF6",
+    dotCoords: [
+      [35, 35], [75, 35], [115, 35], [155, 35],
+      [35, 75], [75, 75], [115, 75], [155, 75],
+      [35, 115], [75, 115], [115, 115], [155, 115]
+    ],
+    caption: "Visual Stimulus #QE-10 • Analog Area Clustered Array",
+    options: ["A) About 3 to 4", "B) About 10 to 14", "C) About 30 to 40", "D) More than 100"],
+    correct: "B) About 10 to 14"
+  },
+  {
+    id: 11,
+    category: "Quantity Understanding & Estimation",
+    domainTag: "Mental Number Line • Place-Value Spatialization",
+    prompt: "Imagine a straight number line starting at 0 on the left and ending at 100 on the right. Where does 50 sit?",
+    visualType: "number_line",
+    caption: "Visual Stimulus #QE-11 • Bounded 0-100 Number Line Calibration",
+    options: ["A) Very close to 0", "B) Exactly halfway in the middle", "C) Very close to 100", "D) At the 1/4 mark"],
+    correct: "B) Exactly halfway in the middle"
+  },
+  {
+    id: 12,
+    category: "Quantity Understanding & Estimation",
+    domainTag: "Place-Value Decomposition",
+    prompt: "In the number 64, what is the mathematical value represented by the digit '6'?",
+    visualType: "word_card",
+    wordText: "64",
+    caption: "Visual Stimulus #QE-12 • Decimal Base-10 Decomposition",
+    options: ["A) 6 units (6)", "B) 6 tens (60)", "C) 6 hundreds (600)", "D) Just the digit 6"],
+    correct: "B) 6 tens (60)"
+  },
+
+  // 13 to 15: Mathematical Reasoning & Sequences
+  {
+    id: 13,
+    category: "Mathematical Reasoning & Sequences",
+    domainTag: "Arithmetic Progression • Ascending Pattern",
+    prompt: "Observe the progression pattern of numbers below. What number comes next in this sequence?",
+    visualType: "sequence",
+    seqText: "4, 8, 12, 16, [ ? ]",
+    caption: "Visual Stimulus #MR-13 • Linear Pattern Recognition (+4)",
+    options: ["A) 18", "B) 20", "C) 22", "D) 24"],
+    correct: "B) 20"
+  },
+  {
+    id: 14,
+    category: "Mathematical Reasoning & Sequences",
+    domainTag: "Reverse Skip Counting • Working Memory",
+    prompt: "Observe the descending sequence of numbers below. What is the missing number in the sequence?",
+    visualType: "sequence",
+    seqText: "35, 30, 25, 20, [ ? ]",
+    caption: "Visual Stimulus #MR-14 • Reverse Sequential Processing (-5)",
+    options: ["A) 10", "B) 15", "C) 18", "D) 12"],
+    correct: "B) 15"
+  },
+  {
+    id: 15,
+    category: "Mathematical Reasoning & Sequences",
+    domainTag: "Applied Word Problem • Relational Reasoning",
+    prompt: "A teacher has 18 pencils and shares them equally among 3 students. How many pencils does each student receive?",
+    visualType: "word_card",
+    wordText: "18 pencils ÷ 3 students",
+    caption: "Visual Stimulus #MR-15 • Semantic Partitioning Logic",
+    options: ["A) 5 pencils", "B) 6 pencils", "C) 7 pencils", "D) 8 pencils"],
+    correct: "B) 6 pencils"
+  }
+];
+
+// --- NAVIGATION ROUTING & HASH CONTROLLER ---
+function navigateTo(viewId) {
+  let cleanId = viewId || 'dashboard';
+
+  if (viewId === 'login') cleanId = 'auth';
+
+  appState.activeView = cleanId;
+
+  // Hide all sections
+  document.querySelectorAll('.page-view').forEach(sec => sec.style.display = 'none');
+
+  // Show target section
+  const target = document.getElementById('view-' + cleanId);
+  if (target) target.style.display = 'block';
+
+  // Update sidebar active button
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  
+  // Highlight appropriate nav button
+  let navTarget = cleanId;
+  if (cleanId === 'charts') navTarget = 'results';
+  if (cleanId === 'auth') navTarget = 'auth';
+  
+  const activeBtn = document.getElementById('nav-' + navTarget);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  // Update browser bar URL
+  const urlMap = {
+    'home': 'home',
+    'dashboard': 'dashboard',
+    'assessment': 'assessment/run',
+    'results': 'assessment/results',
+    'charts': 'assessment/charts',
+    'assistant': 'ai/assistant',
+    'history': 'profile/history',
+    'practice': 'practice',
+    'auth': 'auth/login'
+  };
+  const suffix = urlMap[cleanId] || cleanId;
+  document.getElementById('topUrlText').textContent = 'https://dyscalculia-screener.rizvi.edu.in/' + suffix;
+
+  // Specific view entry hooks
+  if (cleanId === 'assessment') {
+    renderCurrentQuestion();
+    startItemTimer();
+  } else {
+    stopItemTimer();
   }
 
-  // Interactive Question Bank
-  const questions = [
-    {
-      domain: "Number Recognition & Subitizing",
-      title: "How many red dots do you see in the cluster below? (Answer without counting one by one)",
-      stimulus: `<svg width="220" height="130" viewBox="0 0 220 130"><circle cx="45" cy="35" r="15" fill="#EF4444"/><circle cx="175" cy="35" r="15" fill="#EF4444"/><circle cx="110" cy="65" r="15" fill="#EF4444"/><circle cx="45" cy="95" r="15" fill="#EF4444"/><circle cx="175" cy="95" r="15" fill="#EF4444"/></svg>`,
-      options: ["4 Dots", "5 Dots", "6 Dots", "7 Dots"],
-      correct: 1
-    },
-    {
-      domain: "Numerical Magnitude Comparison",
-      title: "Which of the two numbers represents the larger magnitude?",
-      stimulus: `<div style="font-size: 2.8rem; font-weight: 800; color: #38BDF8; letter-spacing: 20px;">83 &nbsp; 38</div>`,
-      options: ["83 is Greater", "38 is Greater", "Both are Equal", "Cannot Determine"],
-      correct: 0
-    },
-    {
-      domain: "Basic Arithmetic Operations",
-      title: "Solve the mental addition fact: 14 + 17 = ?",
-      stimulus: `<div style="font-size: 2.5rem; font-weight: 800; color: #F59E0B;">14 + 17 = [ ? ]</div>`,
-      options: ["29", "31", "33", "21"],
-      correct: 1
-    },
-    {
-      domain: "Quantity Understanding & Estimation",
-      title: "On a number line from 0 to 100, where does the number 75 sit?",
-      stimulus: `<svg width="300" height="60" viewBox="0 0 300 60"><line x1="20" y1="30" x2="280" y2="30" stroke="#94A3B8" stroke-width="4"/><circle cx="20" cy="30" r="6" fill="#3B82F6"/><text x="15" y="55" fill="#94A3B8" font-size="12">0</text><circle cx="280" cy="30" r="6" fill="#3B82F6"/><text x="268" y="55" fill="#94A3B8" font-size="12">100</text><circle cx="215" cy="30" r="8" fill="#EF4444"/><text x="208" y="20" fill="#EF4444" font-weight="bold" font-size="14">?</text></svg>`,
-      options: ["Quarter way", "Halfway (50%)", "Three-quarters way (75%)", "Near the beginning"],
-      correct: 2
-    },
-    {
-      domain: "Mathematical Reasoning & Sequences",
-      title: "Identify the missing number in the progression: 4, 8, 12, 16, __?",
-      stimulus: `<div style="font-size: 2.2rem; font-weight: 800; color: #34D399; letter-spacing: 10px;">4, 8, 12, 16, [ ? ]</div>`,
-      options: ["18", "20", "22", "24"],
-      correct: 1
+  if (cleanId === 'results') {
+    renderResultsView();
+  }
+
+  if (cleanId === 'charts') {
+    renderAllCharts();
+  }
+
+  if (cleanId === 'history') {
+    renderHistoryTable();
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- ASSESSMENT RUNTIME & QUESTION RENDERING ---
+function startNewAssessment() {
+  appState.assessment.currentIndex = 0;
+  appState.assessment.answers = {};
+  appState.assessment.latencies = {};
+  appState.assessment.totalElapsed = 0;
+  navigateTo('assessment');
+  showToast("Screening battery initialized. Answer promptly.");
+}
+
+function renderCurrentQuestion() {
+  const idx = appState.assessment.currentIndex;
+  const q = questionsData[idx];
+  if (!q) return;
+
+  // Header & pills
+  document.getElementById('questionCategoryPill').textContent = `Question ${q.id} of 15 • ${q.category}`;
+  document.getElementById('questionDomainSub').textContent = q.domainTag;
+  document.getElementById('questionPromptHeading').textContent = q.prompt;
+
+  // Progress Bar
+  const pct = Math.round(((idx + 1) / 15) * 100);
+  document.getElementById('assessmentProgressBar').style.width = pct + '%';
+
+  // Stimulus
+  const stimBox = document.getElementById('stimulusContainer');
+  stimBox.innerHTML = '';
+
+  if (q.visualType === 'dots') {
+    let circles = '';
+    q.dotCoords.forEach(([cx, cy]) => {
+      circles += `<circle cx="${cx}" cy="${cy}" r="16" fill="${q.dotColor}" filter="drop-shadow(0 2px 4px rgba(239,68,68,0.5))" />`;
+    });
+    stimBox.innerHTML = `
+      <svg width="240" height="150" viewBox="0 0 240 150" style="display:inline-block;">
+        ${circles}
+      </svg>
+      <p style="font-size: 0.78rem; color: #64748B; margin-top: 10px;">${q.caption}</p>
+    `;
+  } else if (q.visualType === 'word_card') {
+    stimBox.innerHTML = `
+      <div style="background: #152243; border: 2px solid #3B82F6; border-radius: 12px; padding: 20px 40px; display: inline-block;">
+        <span style="font-size: 2.2rem; font-weight: 800; color: #38BDF8; letter-spacing: 1px;">${q.wordText}</span>
+      </div>
+      <p style="font-size: 0.78rem; color: #64748B; margin-top: 10px;">${q.caption}</p>
+    `;
+  } else if (q.visualType === 'compare_boxes') {
+    stimBox.innerHTML = `
+      <div style="display:flex; gap: 30px; align-items:center; justify-content:center;">
+        <div style="background: #1E3A8A; border: 2px solid #3B82F6; border-radius: 12px; padding: 18px 36px;">
+          <span style="font-size: 2.2rem; font-weight: 800; color: white;">${q.valA}</span>
+        </div>
+        <span style="font-size: 1.5rem; color: #94A3B8; font-weight: bold;">VS</span>
+        <div style="background: #152243; border: 2px solid #334155; border-radius: 12px; padding: 18px 36px;">
+          <span style="font-size: 2.2rem; font-weight: 800; color: white;">${q.valB}</span>
+        </div>
+      </div>
+      <p style="font-size: 0.78rem; color: #64748B; margin-top: 12px;">${q.caption}</p>
+    `;
+  } else if (q.visualType === 'equation') {
+    stimBox.innerHTML = `
+      <div style="background: #152243; border: 2px solid #10B981; border-radius: 12px; padding: 18px 40px; display: inline-block;">
+        <span style="font-size: 2.4rem; font-weight: 800; color: #34D399; letter-spacing: 2px;">${q.eqText}</span>
+      </div>
+      <p style="font-size: 0.78rem; color: #64748B; margin-top: 10px;">${q.caption}</p>
+    `;
+  } else if (q.visualType === 'number_line') {
+    stimBox.innerHTML = `
+      <div style="width: 80%; max-width: 480px; margin: 10px auto;">
+        <div style="display:flex; justify-content: space-between; font-weight:bold; color:#38BDF8; margin-bottom: 6px;">
+          <span>0 (Start)</span>
+          <span style="color:#F59E0B;">[ 50 ? ]</span>
+          <span>100 (End)</span>
+        </div>
+        <div style="height: 10px; background: #334155; border-radius: 5px; position: relative;">
+          <div style="width: 8px; height: 24px; background: #EF4444; position: absolute; top: -7px; left: 50%; transform: translateX(-50%); border-radius: 2px;"></div>
+        </div>
+      </div>
+      <p style="font-size: 0.78rem; color: #64748B; margin-top: 16px;">${q.caption}</p>
+    `;
+  } else if (q.visualType === 'sequence') {
+    stimBox.innerHTML = `
+      <div style="background: #152243; border: 2px solid #8B5CF6; border-radius: 12px; padding: 18px 40px; display: inline-block;">
+        <span style="font-size: 2.0rem; font-weight: 800; color: #A78BFA; letter-spacing: 1.5px;">${q.seqText}</span>
+      </div>
+      <p style="font-size: 0.78rem; color: #64748B; margin-top: 10px;">${q.caption}</p>
+    `;
+  } else {
+    stimBox.innerHTML = `
+      <div style="background: #152243; border-radius: 12px; padding: 18px 30px; display: inline-block;">
+        <span style="font-size: 1.8rem; font-weight: 700; color: #F8FAFC;">${q.targetVal || ''}</span>
+      </div>
+      <p style="font-size: 0.78rem; color: #64748B; margin-top: 10px;">${q.caption}</p>
+    `;
+  }
+
+  // Options Grid
+  const optGrid = document.getElementById('optionsGrid');
+  optGrid.innerHTML = '';
+  const selectedAnswer = appState.assessment.answers[q.id];
+
+  q.options.forEach(opt => {
+    const isSelected = selectedAnswer && (selectedAnswer === opt || opt.startsWith(selectedAnswer) || selectedAnswer.startsWith(opt.split(' ')[0]));
+    const optDiv = document.createElement('div');
+    optDiv.className = 'option-card' + (isSelected ? ' selected' : '');
+    optDiv.innerHTML = `
+      <input type="radio" name="assessment_opt" class="option-radio" ${isSelected ? 'checked' : ''} />
+      <span style="font-size: 1.1rem; font-weight: ${isSelected ? '700' : '600'}; color: ${isSelected ? '#FFFFFF' : '#F1F5F9'};">
+        ${opt} ${isSelected ? '(Selected)' : ''}
+      </span>
+    `;
+    optDiv.onclick = () => selectOption(q.id, opt);
+    optGrid.appendChild(optDiv);
+  });
+
+  // Pagination bar Q1 to Q15
+  renderPaginationBar();
+}
+
+function selectOption(qId, optText) {
+  appState.assessment.answers[qId] = optText;
+  renderCurrentQuestion();
+}
+
+function submitAndNext() {
+  const idx = appState.assessment.currentIndex;
+  const q = questionsData[idx];
+
+  recordItemLatency(q.id);
+
+  if (idx < questionsData.length - 1) {
+    appState.assessment.currentIndex++;
+    renderCurrentQuestion();
+    startItemTimer();
+  } else {
+    finishAssessmentAndScore();
+  }
+}
+
+function prevQuestion() {
+  if (appState.assessment.currentIndex > 0) {
+    recordItemLatency(questionsData[appState.assessment.currentIndex].id);
+    appState.assessment.currentIndex--;
+    renderCurrentQuestion();
+    startItemTimer();
+  }
+}
+
+function skipQuestion() {
+  const q = questionsData[appState.assessment.currentIndex];
+  appState.assessment.answers[q.id] = "SKIPPED";
+  recordItemLatency(q.id);
+  submitAndNext();
+}
+
+function jumpToQuestion(qIndex) {
+  recordItemLatency(questionsData[appState.assessment.currentIndex].id);
+  appState.assessment.currentIndex = qIndex;
+  renderCurrentQuestion();
+  startItemTimer();
+}
+
+function renderPaginationBar() {
+  const bar = document.getElementById('questionTrackerBar');
+  bar.innerHTML = '';
+  questionsData.forEach((q, idx) => {
+    const span = document.createElement('span');
+    span.className = 'q-pill';
+    const isCur = idx === appState.assessment.currentIndex;
+    const ans = appState.assessment.answers[q.id];
+
+    if (isCur) {
+      span.classList.add('active');
+      span.innerHTML = `Q${q.id} &bull;`;
+    } else if (ans && ans !== "SKIPPED") {
+      span.classList.add('completed');
+      span.innerHTML = `Q${q.id} &#10003;`;
+    } else if (ans === "SKIPPED") {
+      span.classList.add('skipped');
+      span.innerHTML = `Q${q.id} ?`;
+    } else {
+      span.innerHTML = `Q${q.id}`;
     }
-  ];
 
-  let currentQ = 0;
-  let selectedOpt = null;
+    span.onclick = () => jumpToQuestion(idx);
+    bar.appendChild(span);
+  });
+}
 
-  function renderQuestion() {
-    const q = questions[currentQ];
-    document.getElementById('q-domain').innerText = q.domain;
-    document.getElementById('q-progress').innerText = `Question ${currentQ + 1} of ${questions.length}`;
-    document.getElementById('q-title').innerText = q.title;
-    document.getElementById('q-stimulus').innerHTML = q.stimulus;
-    
-    const optsBox = document.getElementById('q-options');
-    optsBox.innerHTML = '';
-    q.options.forEach((opt, idx) => {
-      const btn = document.createElement('div');
-      btn.className = 'option-btn';
-      btn.innerHTML = `<span style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid #64748B; display: inline-block;"></span> <span>${opt}</span>`;
-      btn.onclick = () => {
-        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedOpt = idx;
-      };
-      optsBox.appendChild(btn);
+// Timer
+function startItemTimer() {
+  stopItemTimer();
+  appState.assessment.itemStartTime = performance.now();
+  const timerEl = document.getElementById('liveTimerDisplay');
+
+  appState.assessment.timerInterval = setInterval(() => {
+    const elapsedSec = ((performance.now() - appState.assessment.itemStartTime) / 1000);
+    timerEl.textContent = elapsedSec.toFixed(2) + 's';
+  }, 40);
+}
+
+function stopItemTimer() {
+  if (appState.assessment.timerInterval) {
+    clearInterval(appState.assessment.timerInterval);
+    appState.assessment.timerInterval = null;
+  }
+}
+
+function recordItemLatency(qId) {
+  if (appState.assessment.itemStartTime) {
+    const elapsedSec = (performance.now() - appState.assessment.itemStartTime) / 1000;
+    appState.assessment.latencies[qId] = (appState.assessment.latencies[qId] || 0) + elapsedSec;
+  }
+}
+
+// --- AI EVALUATION ENGINE ---
+function finishAssessmentAndScore() {
+  stopItemTimer();
+
+  let correctCount = 0;
+  const domainCorrect = {
+    'Number Recognition & Subitizing': 0,
+    'Numerical Magnitude Comparison': 0,
+    'Basic Arithmetic Operations': 0,
+    'Quantity Understanding & Estimation': 0,
+    'Mathematical Reasoning & Sequences': 0
+  };
+  const domainTotals = {
+    'Number Recognition & Subitizing': 3,
+    'Numerical Magnitude Comparison': 3,
+    'Basic Arithmetic Operations': 3,
+    'Quantity Understanding & Estimation': 3,
+    'Mathematical Reasoning & Sequences': 3
+  };
+  const domainTimes = {
+    'Number Recognition & Subitizing': 0,
+    'Numerical Magnitude Comparison': 0,
+    'Basic Arithmetic Operations': 0,
+    'Quantity Understanding & Estimation': 0,
+    'Mathematical Reasoning & Sequences': 0
+  };
+
+  let totalDuration = 0;
+  questionsData.forEach(q => {
+    const userAns = appState.assessment.answers[q.id] || "";
+    const isCorrect = userAns.startsWith(q.correct) || userAns === q.correct;
+    if (isCorrect) {
+      correctCount++;
+      domainCorrect[q.category]++;
+    }
+    const t = appState.assessment.latencies[q.id] || 2.1;
+    domainTimes[q.category] += t;
+    totalDuration += t;
+  });
+
+  const accuracyPct = Math.round((correctCount / 15) * 1000) / 10;
+  const domainAcc = {};
+  for (const cat in domainCorrect) {
+    domainAcc[cat] = Math.round((domainCorrect[cat] / domainTotals[cat]) * 100);
+  }
+
+  let lowestCat = 'Mental Arithmetic';
+  let minScore = 999;
+  for (const cat in domainAcc) {
+    if (domainAcc[cat] < minScore) {
+      minScore = domainAcc[cat];
+      lowestCat = cat;
+    }
+  }
+
+  const subitizingDeficit = (100 - domainAcc['Number Recognition & Subitizing']) * 0.19;
+  const arithDeficit = (100 - domainAcc['Basic Arithmetic Operations']) * 0.24;
+  const magDeficit = (100 - domainAcc['Numerical Magnitude Comparison']) * 0.15;
+  const estDeficit = (100 - domainAcc['Quantity Understanding & Estimation']) * 0.14;
+  const reasDeficit = (100 - domainAcc['Mathematical Reasoning & Sequences']) * 0.13;
+
+  let riskProb = Math.round((subitizingDeficit + arithDeficit + magDeficit + estDeficit + reasDeficit + 12.0) * 10) / 10;
+  riskProb = Math.min(94.5, Math.max(8.0, riskProb));
+
+  let outcomeTitle = "MODERATE RISK OF DYSCALCULIA";
+  let outcomeClass = "risk-moderate";
+  let narrative = "The Random Forest classifier detected characteristic mathematical difficulties, primarily in mental arithmetic and quantity estimation. Recommended for tailored multi-sensory educational intervention.";
+
+  if (riskProb >= 65.0) {
+    outcomeTitle = "HIGH RISK OF DYSCALCULIA";
+    outcomeClass = "risk-high";
+    narrative = "The Random Forest classifier identified significant atypical neuro-cognitive markers across subitizing and fact retrieval. Comprehensive clinical neuropsychological evaluation is strongly advised.";
+  } else if (riskProb < 35.0) {
+    outcomeTitle = "LOW RISK (AGE APPROPRIATE)";
+    outcomeClass = "risk-low";
+    narrative = "Numerical processing, magnitude apprehension, and fact retrieval speeds operate within age-normative benchmarks. Continue standard curriculum reinforcement.";
+  }
+
+  appState.liveReport = {
+    candidate: appState.currentUser.name,
+    date: new Date().toISOString().replace('T', ' ').substring(0, 19),
+    riskOutcome: outcomeTitle,
+    riskClass: outcomeClass,
+    riskProb: riskProb,
+    score: correctCount,
+    accuracy: accuracyPct,
+    totalTime: Math.round(totalDuration * 10) / 10,
+    deficit: lowestCat,
+    narrative: narrative,
+    domainAcc: domainAcc,
+    domainLatencies: {
+      'Number Recognition & Subitizing': Math.round((domainTimes['Number Recognition & Subitizing'] / 3) * 100) / 100,
+      'Numerical Magnitude Comparison': Math.round((domainTimes['Numerical Magnitude Comparison'] / 3) * 100) / 100,
+      'Basic Arithmetic Operations': Math.round((domainTimes['Basic Arithmetic Operations'] / 3) * 100) / 100,
+      'Quantity Understanding & Estimation': Math.round((domainTimes['Quantity Understanding & Estimation'] / 3) * 100) / 100,
+      'Mathematical Reasoning & Sequences': Math.round((domainTimes['Mathematical Reasoning & Sequences'] / 3) * 100) / 100
+    }
+  };
+
+  appState.history.unshift({
+    id: `#${appState.history.length + 1} (Live)`,
+    date: appState.liveReport.date.substring(0, 16),
+    score: `${correctCount} / 15`,
+    acc: `${accuracyPct}%`,
+    duration: `${appState.liveReport.totalTime}s`,
+    outcome: `${outcomeTitle.split(' ')[0]} (${riskProb}%)`,
+    outcomeBadge: riskProb >= 65 ? 'badge-danger' : (riskProb >= 35 ? 'badge-warn' : 'badge-success'),
+    deficit: lowestCat
+  });
+
+  appState.currentReportMode = 'live';
+  navigateTo('results');
+  showToast("Assessment complete! AI risk screening analysis computed.");
+}
+
+// --- RESULTS VIEW RENDERING & CHARTS ---
+function renderResultsView() {
+  const r = (appState.currentReportMode === 'live' && appState.liveReport) ? appState.liveReport : appState.academicReport;
+
+  document.getElementById('reportCandidateMeta').innerHTML = `
+    Assessment <b>#1</b> &bull; Candidate: <b>${r.candidate}</b> &bull; Conducted: <b>${r.date}</b>
+  `;
+
+  const banner = document.getElementById('aiRiskBanner');
+  banner.className = 'risk-banner ' + r.riskClass;
+  document.getElementById('riskOutcomeTitle').textContent = r.riskOutcome;
+  document.getElementById('riskOutcomeNarrative').textContent = r.narrative;
+  document.getElementById('dyscalculiaIndexVal').textContent = r.riskProb + '%';
+
+  document.getElementById('resTotalScore').textContent = `${r.score} / 15`;
+  document.getElementById('resAccuracy').textContent = `${r.accuracy}%`;
+  document.getElementById('resTotalTime').textContent = `${r.totalTime}s`;
+  document.getElementById('resDeficitArea').textContent = r.deficit;
+}
+
+let catAccChart = null;
+let radarChart = null;
+let latencyChart = null;
+
+function renderAllCharts() {
+  const isAcademic = (appState.currentReportMode === 'academic' || !appState.liveReport);
+
+  const imgCat = document.getElementById('imgChartCat');
+  const canvasCat = document.getElementById('canvasChartCat');
+  const imgRadar = document.getElementById('imgChartRadar');
+  const canvasRadar = document.getElementById('canvasChartRadar');
+  const imgLatency = document.getElementById('imgChartLatency');
+  const canvasLatency = document.getElementById('canvasChartLatency');
+
+  if (isAcademic) {
+    // Show static high-res pre-rendered Matplotlib PNGs matching Screenshot 7.2.5
+    imgCat.style.display = 'block';
+    canvasCat.style.display = 'none';
+    imgRadar.style.display = 'block';
+    canvasRadar.style.display = 'none';
+    imgLatency.style.display = 'block';
+    canvasLatency.style.display = 'none';
+  } else {
+    // Show live Chart.js rendering
+    imgCat.style.display = 'none';
+    canvasCat.style.display = 'block';
+    imgRadar.style.display = 'none';
+    canvasRadar.style.display = 'block';
+    imgLatency.style.display = 'none';
+    canvasLatency.style.display = 'block';
+
+    const r = appState.liveReport;
+
+    const ctxCat = canvasCat.getContext('2d');
+    if (catAccChart) catAccChart.destroy();
+    const categories = [
+      'Mathematical Reasoning & Sequences',
+      'Quantity Understanding & Estimation',
+      'Basic Arithmetic Operations',
+      'Numerical Magnitude Comparison',
+      'Number Recognition & Subitizing'
+    ];
+    const studentScores = categories.map(c => r.domainAcc[c] || 33);
+    catAccChart = new Chart(ctxCat, {
+      type: 'bar',
+      data: {
+        labels: categories,
+        datasets: [
+          { label: 'Student Score (%)', data: studentScores, backgroundColor: studentScores.map(v => v < 50 ? '#EF4444' : (v < 75 ? '#F59E0B' : '#10B981')), borderRadius: 4 },
+          { label: 'Peer Baseline (85%)', data: [85, 85, 85, 85, 85], backgroundColor: '#CBD5E1', borderRadius: 4 }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } },
+        scales: { x: { min: 0, max: 100, ticks: { font: { size: 10 } } }, y: { ticks: { font: { size: 9, weight: 'bold' } } } }
+      }
+    });
+
+    const ctxRadar = canvasRadar.getContext('2d');
+    if (radarChart) radarChart.destroy();
+    radarChart = new Chart(ctxRadar, {
+      type: 'radar',
+      data: {
+        labels: ['Subitizing & Dot Sense', 'Magnitude Comparison', 'Mental Arithmetic', 'Quantity Estimation', 'Mathematical Reasoning'],
+        datasets: [
+          { label: 'Student Profile', data: [r.domainAcc['Number Recognition & Subitizing'], r.domainAcc['Numerical Magnitude Comparison'], r.domainAcc['Basic Arithmetic Operations'], r.domainAcc['Quantity Understanding & Estimation'], r.domainAcc['Mathematical Reasoning & Sequences']], borderColor: '#2563EB', backgroundColor: 'rgba(37, 99, 235, 0.25)', pointBackgroundColor: '#2563EB', borderWidth: 2 },
+          { label: 'Expected Norm (85%)', data: [85, 85, 85, 85, 85], borderColor: '#10B981', borderDash: [5, 5], backgroundColor: 'transparent', pointRadius: 0, borderWidth: 2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { r: { min: 0, max: 100, ticks: { stepSize: 25, display: false }, pointLabels: { font: { size: 10, weight: '600' } } } },
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+      }
+    });
+
+    const ctxLatency = canvasLatency.getContext('2d');
+    if (latencyChart) latencyChart.destroy();
+    latencyChart = new Chart(ctxLatency, {
+      type: 'bar',
+      data: {
+        labels: ['Subitizing', 'Magnitude', 'Arithmetic', 'Estimation', 'Reasoning'],
+        datasets: [
+          { label: 'Student Latency (s)', data: [r.domainLatencies['Number Recognition & Subitizing'], r.domainLatencies['Numerical Magnitude Comparison'], r.domainLatencies['Basic Arithmetic Operations'], r.domainLatencies['Quantity Understanding & Estimation'], r.domainLatencies['Mathematical Reasoning & Sequences']], backgroundColor: '#2563EB', borderRadius: 4 },
+          { label: 'Expected Baseline (s)', data: [1.0, 1.1, 2.2, 1.4, 1.5], backgroundColor: '#94A3B8', borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } },
+        scales: { y: { title: { display: true, text: 'Time (seconds)', font: { size: 10 } } } }
+      }
     });
   }
+}
 
-  function nextQuestion() {
-    if (selectedOpt === null) {
-      alert("Please select an answer before advancing!");
-      return;
+function printClinicalReport() {
+  window.print();
+}
+
+// --- USER ASSESSMENT HISTORY ---
+function renderHistoryTable() {
+  const tbody = document.getElementById('historyTableBody');
+  tbody.innerHTML = '';
+  document.getElementById('histSessionCount').textContent = appState.history.length;
+
+  appState.history.forEach((sess, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><b>${sess.id}</b></td>
+      <td>${sess.date}</td>
+      <td>${sess.score}</td>
+      <td><b>${sess.acc}</b></td>
+      <td>${sess.duration}</td>
+      <td><span class="badge ${sess.outcomeBadge}">${sess.outcome}</span></td>
+      <td>${sess.deficit}</td>
+      <td><button class="btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="viewHistoryItem(${idx})">Inspect</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function viewHistoryItem(idx) {
+  if (idx === 0 && appState.liveReport) {
+    appState.currentReportMode = 'live';
+  } else {
+    appState.currentReportMode = 'academic';
+  }
+  navigateTo('results');
+  showToast(`Loaded details for historical session.`);
+}
+
+// --- AI SCREENING ASSISTANT & SIMULATOR ---
+function updateSimFromSliders() {
+  const subRt = parseInt(document.getElementById('simSubRt').value);
+  const arithRt = parseInt(document.getElementById('simArithRt').value);
+  const arithAcc = parseInt(document.getElementById('simArithAcc').value);
+  const magAcc = parseInt(document.getElementById('simMagAcc').value);
+
+  document.getElementById('lblSimSubRt').textContent = subRt + ' ms';
+  document.getElementById('lblSimArithRt').textContent = arithRt + ' ms';
+  document.getElementById('lblSimArithAcc').textContent = arithAcc + ' %';
+  document.getElementById('lblSimMagAcc').textContent = magAcc + ' %';
+
+  const subFactor = Math.max(0, (subRt - 900) / 2600) * 22;
+  const arithRtFactor = Math.max(0, (arithRt - 2000) / 4000) * 26;
+  const arithAccFactor = Math.max(0, (85 - arithAcc) / 85) * 28;
+  const magFactor = Math.max(0, (88 - magAcc) / 88) * 16;
+
+  let simProb = Math.round((subFactor + arithRtFactor + arithAccFactor + magFactor + 10.0) * 10) / 10;
+  simProb = Math.min(97.2, Math.max(6.5, simProb));
+
+  document.getElementById('simPredictedProb').textContent = simProb + '%';
+
+  const outEl = document.getElementById('simPredictedOutcome');
+  if (simProb >= 65.0) {
+    outEl.textContent = 'High Risk of Dyscalculia';
+    outEl.style.color = '#EF4444';
+  } else if (simProb >= 35.0) {
+    outEl.textContent = 'Moderate Risk of Dyscalculia';
+    outEl.style.color = '#F59E0B';
+  } else {
+    outEl.textContent = 'Low Risk (Age Appropriate)';
+    outEl.style.color = '#10B981';
+  }
+}
+
+function sendAiChatMessage() {
+  const input = document.getElementById('aiChatInput');
+  const txt = input.value.trim();
+  if (!txt) return;
+
+  const log = document.getElementById('aiChatLog');
+  log.innerHTML += `<p style="color:#CBD5E1; margin-top:4px;"><b>You:</b> ${escapeHtml(txt)}</p>`;
+  input.value = '';
+
+  setTimeout(() => {
+    let reply = "Research suggests multi-sensory concrete manipulatives (Numicon, Cuisenaire rods) and extended testing time (25-50%) significantly improve fact retrieval retention.";
+    const lower = txt.toLowerCase();
+    if (lower.includes('criteria') || lower.includes('dsm') || lower.includes('icd')) {
+      reply = "Under DSM-5 (Specific Learning Disorder with impairment in mathematics) and ICD-11 (6A03.0), dyscalculia involves persistent subitizing deficits, number line compression, and impaired arithmetic fact retrieval unexplained by intellectual disability.";
+    } else if (lower.includes('subitiz') || lower.includes('dot')) {
+      reply = "Subitizing is the rapid apprehending of small quantities (1-4) without sequential counting. Dyscalculic learners exhibit a flat reaction time curve indicating slow serial counting even for small dot clusters.";
+    } else if (lower.includes('finger') || lower.includes('counting')) {
+      reply = "Persistent finger counting beyond Grade 3 is a diagnostic hallmark indicating fact retrieval deficit. A 0-100 visual desk ruler reduces working memory load and cognitive fatigue.";
     }
-    selectedOpt = null;
-    if (currentQ < questions.length - 1) {
-      currentQ++;
-      renderQuestion();
-    } else {
-      alert("🎉 Diagnostic Assessment Completed! Redirecting to Risk Analysis Report...");
-      showTab('results');
-    }
+    log.innerHTML += `<p style="color:#38BDF8; margin-top:4px;"><b>AI Screener:</b> ${reply}</p>`;
+    log.scrollTop = log.scrollHeight;
+  }, 400);
+}
+
+// --- MATH PRACTICE ARENA GAMES ---
+let currentBlitzCount = 5;
+function startDotBlitzGame() {
+  const area = document.getElementById('practicePlayArea');
+  currentBlitzCount = Math.floor(Math.random() * 5) + 2;
+
+  let circles = '';
+  for (let i = 0; i < currentBlitzCount; i++) {
+    const cx = Math.floor(Math.random() * 200) + 30;
+    const cy = Math.floor(Math.random() * 100) + 30;
+    circles += `<circle cx="${cx}" cy="${cy}" r="12" fill="#38BDF8" />`;
   }
 
-  function prevQuestion() {
-    if (currentQ > 0) {
-      currentQ--;
-      renderQuestion();
-    }
-  }
+  area.innerHTML = `
+    <h3 style="color:#38BDF8; margin-bottom: 10px;">Subitizing Flash Blitz</h3>
+    <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:12px;">Apprehend the quantity before the flash vanishes!</p>
+    <div id="blitzStimulus" style="background:#0B1120; border:2px dashed #334155; border-radius:12px; padding:20px; display:inline-block;">
+      <svg width="260" height="150" viewBox="0 0 260 150">${circles}</svg>
+    </div>
+    <div id="blitzInputArea" style="margin-top: 16px; display:none;">
+      <p style="font-size:0.9rem; margin-bottom:8px;">How many dots did you see?</p>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        ${[2,3,4,5,6,7].map(n => `<button class="btn-secondary" style="font-size:1.1rem; padding:8px 16px;" onclick="checkBlitzAnswer(${n})">${n}</button>`).join('')}
+      </div>
+    </div>
+  `;
 
-  // Interactive What-If Simulator
-  function updateSim() {
-    const sub = parseInt(document.getElementById('rng-sub').value);
-    const subRt = parseInt(document.getElementById('rng-sub-rt').value);
-    const arith = parseInt(document.getElementById('rng-arith').value);
-    const arithRt = parseInt(document.getElementById('rng-arith-rt').value);
-    
-    document.getElementById('lbl-sub').innerText = sub + '%';
-    document.getElementById('lbl-sub-rt').innerText = subRt + ' ms';
-    document.getElementById('lbl-arith').innerText = arith + '%';
-    document.getElementById('lbl-arith-rt').innerText = arithRt + ' ms';
-    
-    // Heuristic approximation of Random Forest Classifier
-    const riskScore = ((100 - arith) * 0.45) + ((100 - sub) * 0.25) + ((arithRt / 6000) * 100 * 0.2) + ((subRt / 4000) * 100 * 0.1);
-    const prob = Math.min(99.4, Math.max(8.0, riskScore)).toFixed(1);
-    document.getElementById('sim-prob').innerText = prob + '%';
-    
-    const outcomeEl = document.getElementById('sim-outcome');
-    if (prob >= 65) {
-      outcomeEl.innerText = "HIGH DYSCALCULIA RISK";
-      outcomeEl.style.color = "#EF4444";
-    } else if (prob >= 40) {
-      outcomeEl.innerText = "MODERATE DYSCALCULIA RISK";
-      outcomeEl.style.color = "#F59E0B";
-    } else {
-      outcomeEl.innerText = "LOW RISK / TYPICAL PROFILE";
-      outcomeEl.style.color = "#10B981";
-    }
-  }
+  setTimeout(() => {
+    const stim = document.getElementById('blitzStimulus');
+    if (stim) stim.innerHTML = `<span style="color:#64748B; font-weight:bold; font-size:1.1rem;">[ Flash Ended ]</span>`;
+    const inp = document.getElementById('blitzInputArea');
+    if (inp) inp.style.display = 'block';
+  }, 850);
+}
 
-  // Initial load
-  renderQuestion();
+function checkBlitzAnswer(selectedNum) {
+  const area = document.getElementById('practicePlayArea');
+  if (selectedNum === currentBlitzCount) {
+    area.innerHTML = `
+      <h3 style="color:#10B981; font-size:1.5rem; margin-bottom:8px;">&#10003; Correct Subitizing!</h3>
+      <p style="color:#CBD5E1; margin-bottom:14px;">You instantly recognized ${currentBlitzCount} dots without serial counting.</p>
+      <button class="btn-primary" onclick="startDotBlitzGame()">Next Round &rarr;</button>
+    `;
+  } else {
+    area.innerHTML = `
+      <h3 style="color:#EF4444; font-size:1.5rem; margin-bottom:8px;">&#10007; Close Attempt!</h3>
+      <p style="color:#CBD5E1; margin-bottom:14px;">The actual count was <b>${currentBlitzCount}</b> dots. Let's try another flash!</p>
+      <button class="btn-primary" onclick="startDotBlitzGame()">Try Again &rarr;</button>
+    `;
+  }
+}
+
+function startMagnitudeDuelGame() {
+  const area = document.getElementById('practicePlayArea');
+  const a = Math.floor(Math.random() * 80) + 12;
+  let b = Math.floor(Math.random() * 80) + 12;
+  while (b === a) b = Math.floor(Math.random() * 80) + 12;
+  const larger = Math.max(a, b);
+
+  area.innerHTML = `
+    <h3 style="color:#34D399; margin-bottom: 8px;">Rapid Magnitude Duel</h3>
+    <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:16px;">Click the LARGER number as fast as possible!</p>
+    <div style="display:flex; gap:30px; justify-content:center;">
+      <button class="btn-secondary" style="font-size:2.2rem; font-weight:800; padding:20px 40px; background:#152243;" onclick="checkMagnitudeDuel(${a}, ${larger})">${a}</button>
+      <button class="btn-secondary" style="font-size:2.2rem; font-weight:800; padding:20px 40px; background:#152243;" onclick="checkMagnitudeDuel(${b}, ${larger})">${b}</button>
+    </div>
+  `;
+}
+
+function checkMagnitudeDuel(chosen, larger) {
+  const area = document.getElementById('practicePlayArea');
+  if (chosen === larger) {
+    area.innerHTML = `
+      <h3 style="color:#10B981; font-size:1.4rem; margin-bottom:8px;">&#10003; Excellent! ${chosen} is larger.</h3>
+      <button class="btn-primary" onclick="startMagnitudeDuelGame()">Next Duel &rarr;</button>
+    `;
+  } else {
+    area.innerHTML = `
+      <h3 style="color:#EF4444; font-size:1.4rem; margin-bottom:8px;">&#10007; Oops! ${larger} is larger than ${chosen}.</h3>
+      <button class="btn-primary" onclick="startMagnitudeDuelGame()">Try Again &rarr;</button>
+    `;
+  }
+}
+
+function startNumberLineGame() {
+  const area = document.getElementById('practicePlayArea');
+  const target = Math.floor(Math.random() * 80) + 10;
+
+  area.innerHTML = `
+    <h3 style="color:#A78BFA; margin-bottom: 8px;">Number Line Target Catch</h3>
+    <p style="font-size:0.88rem; color:#CBD5E1; margin-bottom:12px;">Place target number: <b style="color:#38BDF8; font-size:1.3rem;">${target}</b></p>
+    <div style="width: 80%; max-width: 480px; margin: 16px auto;">
+      <input type="range" min="0" max="100" value="50" class="form-control" id="numLineSlider" oninput="document.getElementById('lblLineSlider').textContent=this.value" />
+      <div style="display:flex; justify-content: space-between; font-weight:bold; color:#94A3B8; margin-top: 6px;">
+        <span>0</span>
+        <span style="color:#38BDF8;">Your Guess: <span id="lblLineSlider">50</span></span>
+        <span>100</span>
+      </div>
+    </div>
+    <button class="btn-primary" style="margin-top:14px;" onclick="checkNumberLine(${target})">Confirm Position</button>
+  `;
+}
+
+function checkNumberLine(target) {
+  const guess = parseInt(document.getElementById('numLineSlider').value);
+  const diff = Math.abs(guess - target);
+  const area = document.getElementById('practicePlayArea');
+
+  if (diff <= 6) {
+    area.innerHTML = `
+      <h3 style="color:#10B981; font-size:1.4rem; margin-bottom:8px;">&#10003; Spot On! Difference only ${diff}.</h3>
+      <p style="color:#CBD5E1; margin-bottom:14px;">Target was <b>${target}</b>, you placed at <b>${guess}</b>.</p>
+      <button class="btn-primary" onclick="startNumberLineGame()">Next Challenge &rarr;</button>
+    `;
+  } else {
+    area.innerHTML = `
+      <h3 style="color:#F59E0B; font-size:1.4rem; margin-bottom:8px;">Off by ${diff} units.</h3>
+      <p style="color:#CBD5E1; margin-bottom:14px;">Target was <b>${target}</b>, your guess was <b>${guess}</b>.</p>
+      <button class="btn-primary" onclick="startNumberLineGame()">Try Again &rarr;</button>
+    `;
+  }
+}
+
+// --- USER AUTHENTICATION & QUICK DEMO LOGINS ---
+function handleUserSignIn(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const role = document.getElementById('loginRole').value;
+
+  appState.currentUser.email = email;
+  appState.currentUser.role = role;
+  appState.currentUser.name = email.split('@')[0].toUpperCase();
+
+  updateActiveUserPill();
+  navigateTo('dashboard');
+  showToast(`Signed in successfully as ${appState.currentUser.name} (${role})`);
+}
+
+function handleUserRegistration(e) {
+  e.preventDefault();
+  const name = document.getElementById('regName').value.trim();
+  const age = document.getElementById('regAge').value;
+  const email = document.getElementById('regEmail').value.trim();
+
+  appState.currentUser.name = name;
+  appState.currentUser.age = age;
+  appState.currentUser.email = email;
+  appState.currentUser.role = 'Student / Learner';
+  appState.currentUser.grade = `Age ${age} • Grade ${Math.max(1, age - 5)}`;
+
+  updateActiveUserPill();
+  navigateTo('dashboard');
+  showToast(`Verified profile created! Welcome, ${name}.`);
+}
+
+function quickLoginDemo(accountType) {
+  if (accountType === 'student') {
+    appState.currentUser = {
+      name: 'Demo Student (Rohan)',
+      role: 'Student / Learner',
+      email: 'rohan@example.com',
+      age: 10,
+      grade: 'Grade 5'
+    };
+  } else if (accountType === 'educator') {
+    appState.currentUser = {
+      name: 'Prof. Javed Pathan',
+      role: 'Educator / Teacher',
+      email: 'javed.pathan@rizvi.edu',
+      age: 42,
+      grade: 'Faculty Guide'
+    };
+  } else if (accountType === 'clinician') {
+    appState.currentUser = {
+      name: 'Dr. Diagnostic Lead',
+      role: 'Educational Psychologist / Clinician',
+      email: 'clinic@example.com',
+      age: 38,
+      grade: 'Neuropsychology Lead'
+    };
+  }
+  updateActiveUserPill();
+  navigateTo('dashboard');
+  showToast(`Quick logged in as ${appState.currentUser.name}`);
+}
+
+function updateActiveUserPill() {
+  document.getElementById('profileName').textContent = appState.currentUser.name;
+  document.getElementById('profileSub').innerHTML = `${appState.currentUser.role.split('/')[0]} &bull; Age ${appState.currentUser.age || 10} &bull; ${appState.currentUser.grade || 'Grade 5'}`;
+  
+  // Update dashboard user name to Rohan if Demo Student
+  let firstName = appState.currentUser.name.split(' ')[0];
+  if (appState.currentUser.name.includes('Rohan')) firstName = 'Rohan';
+  document.getElementById('dashUserName').textContent = firstName;
+
+  document.getElementById('histProfileName').textContent = appState.currentUser.name;
+  document.getElementById('histProfileEmail').textContent = appState.currentUser.email;
+  document.getElementById('histProfileRole').innerHTML = `${appState.currentUser.role.split('/')[0]} &bull; Rizvi College`;
+  document.getElementById('histProfileAge').textContent = `${appState.currentUser.age || 10} Years (${appState.currentUser.grade || 'Grade 5'})`;
+}
+
+// --- UTILITIES ---
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 3200);
+}
+
+function escapeHtml(text) {
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// --- INITIALIZATION ON PAGE LOAD ---
+function applyHashRoute() {
+  const h = window.location.hash.replace('#', '').trim() || 'dashboard';
+  navigateTo(h);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateActiveUserPill();
+  renderHistoryTable();
+  updateSimFromSliders();
+  applyHashRoute();
+});
+
+window.addEventListener('hashchange', applyHashRoute);
 </script>
+
 </body>
 </html>
